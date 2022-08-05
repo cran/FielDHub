@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Latin Square Design</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Latin Square Design</h1>
+
+
+
+<p>This vignette shows how to generate a <strong>Latin square
+design</strong> using both the FielDHub Shiny App and the scripting
+function <code>latin_square()</code> from the <code>FielDHub</code>
+package.</p>
+<div id="using-the-fieldhub-shiny-app" class="section level2">
+<h2>1. Using the FielDHub Shiny App</h2>
+<p>To launch the app you need to run either</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>FielDHub<span class="sc">::</span><span class="fu">run_app</span>()</span></code></pre></div>
+<p>or</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(FielDHub)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">run_app</span>()</span></code></pre></div>
+<p>Once the app is running, go to <strong>Other Designs</strong> &gt;
+<strong>Latin Square Design</strong></p>
+<p>Then, follow the following steps where we show how to generate this
+kind of design by an example with 5 treatments and 2 reps.</p>
+</div>
+<div id="inputs" class="section level2">
+<h2>Inputs</h2>
+<ol style="list-style-type: decimal">
+<li><strong>Import entries’ list?</strong> Choose whether to import a
+list with entry numbers and names for genotypes or treatments.
+<ul>
+<li><p>If the selection is <code>No</code>, that means the app is going
+to generate synthetic data for entries and names of the treatment based
+on the user inputs.</p></li>
+<li><p>If the selection is <code>Yes</code>, the entries list must
+fulfill a specific format and must be a <code>.csv</code> file. The file
+must have the three columns: <code>ROW</code>, <code>COLUMN</code> and
+<code>TREATMENT</code>. All of those columns contain a list of unique
+names that identify each treatment. Duplicate values are not allowed,
+all entries must be unique. In the following table, we show an example
+of the entries list format. This example has an entry list with 5
+treatments.</p></li>
+</ul></li>
+</ol>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROW</th>
+<th align="left">COLUMN</th>
+<th align="left">TREATMENT</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Period1</td>
+<td align="left">Cow1</td>
+<td align="left">Diet1</td>
+</tr>
+<tr class="even">
+<td align="left">Period2</td>
+<td align="left">Cow2</td>
+<td align="left">Diet2</td>
+</tr>
+<tr class="odd">
+<td align="left">Period3</td>
+<td align="left">Cow3</td>
+<td align="left">Diet3</td>
+</tr>
+<tr class="even">
+<td align="left">Period4</td>
+<td align="left">Cow4</td>
+<td align="left">Diet4</td>
+</tr>
+<tr class="odd">
+<td align="left">Period5</td>
+<td align="left">Cow5</td>
+<td align="left">Diet5</td>
+</tr>
+</tbody>
+</table>
+<ol start="2" style="list-style-type: decimal">
+<li><p>Input the number of treatments in the <strong>Input # of
+Treatments</strong> box. In the alpha lattice design, the number of
+treatments must be a composite number.</p></li>
+<li><p>Select the number of replications of these treatments with the
+<strong>Input # of Full Reps</strong> box. The number of treatments and
+the number of full reps set the dimensions of the field.</p></li>
+<li><p>Select <code>serpentine</code> or <code>cartesian</code> in the
+<strong>Plot Order Layout</strong>. For this example we will use the
+default <code>serpentine</code> layout.</p></li>
+<li><p>Enter the starting plot number in the <strong>Starting Plot
+Number</strong> box. If the experiment has multiple locations, you must
+enter a comma separated list of numbers the length of the number of
+locations for the input to be valid.</p></li>
+<li><p>Enter a name for the location of the experiment in the
+<strong>Input Location</strong> box. A completely randomized design can
+only be run in a single location at a time.</p></li>
+<li><p>To ensure that randomizations are consistent across sessions, we
+can set a seed number in the box labeled <strong>Seed Number</strong>.
+In this example, we will set it to <code>123</code>.</p></li>
+<li><p>Once we have entered the information for our experiment on the
+left side panel, click the <strong>Run!</strong> button to run the
+design.</p></li>
+</ol>
+</div>
+<div id="outputs" class="section level2">
+<h2>Outputs</h2>
+<p>After you run a Latin square design in FielDHub, there are several
+ways to display the information contained in the field book.</p>
+<div id="field-layout" class="section level3">
+<h3>Field Layout</h3>
+<p>When you first click the run button on a Latin square design,
+FielDHub displays the Field Layout tab, which shows the entries and
+their arrangement in the field. In the box below the display, you can
+change the layout of the field. You can also display a heatmap over the
+field by changing <strong>Type of Plot</strong> to <code>Heatmap</code>.
+To view a heatmap, you must first simulate an experiment over the
+described field with the <strong>Simulate!</strong> button. A pop-up
+window will appear where you can enter what variable you want to
+simulate along with minimum and maximum values.</p>
+</div>
+<div id="field-book" class="section level3">
+<h3>Field Book</h3>
+<p>The <strong>Field Book</strong> displays all the information on the
+experimental design in a table format. It contains the specific plot
+number and the row and column address of each entry, as well as the
+corresponding treatment on that plot. This table is searchable, and we
+can filter the data in relevant columns. If we have simulated data for a
+heatmap, an additional column for that variable appears in the field
+book.</p>
+</div>
+</div>
+<div id="using-the-fieldhub-function-latin_square" class="section level2">
+<h2>2. Using the <code>FielDHub</code> function:
+<code>latin_square()</code></h2>
+<p>You can run the same design with a function in the FielDHub package,
+<code>latin_square()</code>.</p>
+<p>First, you need to load the <code>FielDHub</code> package typing,</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(FielDHub)</span></code></pre></div>
+<p>Then, you can enter the information describing the above design like
+this:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>lsd <span class="ot">&lt;-</span> <span class="fu">latin_square</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">t =</span> <span class="dv">5</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">reps =</span> <span class="dv">2</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">plotNumber =</span> <span class="dv">101</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">planter =</span> <span class="st">&quot;serpentine&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">1238</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div id="details-on-the-inputs-entered-in-latin_square-above" class="section level4">
+<h4>Details on the inputs entered in <code>latin_square()</code>
+above</h4>
+<ul>
+<li><code>t = 5</code> is the number of treatments.</li>
+<li><code>reps = 2</code> is the number of replications (squares).</li>
+<li><code>plotNumber = 101</code> is the starting plot number.</li>
+<li><code>planter = &quot;cartesian&quot;</code> is the plot order layout.</li>
+<li><code>locationNames = &quot;FARGO&quot;</code> is an optional name for the
+location.</li>
+<li><code>seed = 1238</code> is the seed number to replicate identical
+randomizations.</li>
+</ul>
+</div>
+<div id="print-lsd-object" class="section level3">
+<h3>Print <code>lsd</code> object</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lsd)</span></code></pre></div>
+<pre><code>Latin Square Design: 
+
+Information on the design parameters: 
+List of 4
+ $ treatments  : int 5
+ $ squares     : num 2
+ $ locationName: NULL
+ $ seed        : num 1238
+
+ 10 First observations of the data frame with the latin_square field book: 
+   ID LOCATION PLOT SQUARE   ROW   COLUMN TREATMENT
+1   1        1  101      1 Row 1 Column 1        T5
+2   2        1  102      1 Row 1 Column 2        T1
+3   3        1  103      1 Row 1 Column 3        T2
+4   4        1  104      1 Row 1 Column 4        T4
+5   5        1  105      1 Row 1 Column 5        T3
+6   6        1  110      1 Row 2 Column 1        T4
+7   7        1  109      1 Row 2 Column 2        T2
+8   8        1  108      1 Row 2 Column 3        T3
+9   9        1  107      1 Row 2 Column 4        T1
+10 10        1  106      1 Row 2 Column 5        T5</code></pre>
+</div>
+<div id="access-to-lsd-object" class="section level3">
+<h3>Access to <code>lsd</code> object</h3>
+<p>The <code>latin_square()</code> function returns a list consisting of
+all the information displayed in the output tabs in the FielDHub app:
+design information, plot layout, plot numbering, entries list, and field
+book. These are accessible by the <code>$</code> operator,
+i.e. <code>lsd$layoutRandom</code> or <code>lsd$fieldBook</code>.</p>
+<p><code>lsd$fieldBook</code> is a list containing information about
+every plot in the field, with information about the location of the plot
+and the treatment in each plot. As seen in the output below, the field
+book has columns for <code>ID</code>, <code>LOCATION</code>,
+<code>PLOT</code>, <code>SQUARE</code>, <code>ROW</code>,
+<code>COLUMN</code>, and <code>TREATMENT</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>field_book <span class="ot">&lt;-</span> lsd<span class="sc">$</span>fieldBook</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(lsd<span class="sc">$</span>fieldBook, <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>   ID LOCATION PLOT SQUARE   ROW   COLUMN TREATMENT
+1   1        1  101      1 Row 1 Column 1        T5
+2   2        1  102      1 Row 1 Column 2        T1
+3   3        1  103      1 Row 1 Column 3        T2
+4   4        1  104      1 Row 1 Column 4        T4
+5   5        1  105      1 Row 1 Column 5        T3
+6   6        1  110      1 Row 2 Column 1        T4
+7   7        1  109      1 Row 2 Column 2        T2
+8   8        1  108      1 Row 2 Column 3        T3
+9   9        1  107      1 Row 2 Column 4        T1
+10 10        1  106      1 Row 2 Column 5        T5</code></pre>
+</div>
+<div id="plot-the-field-layout" class="section level3">
+<h3>Plot the field layout</h3>
+<p>For plotting the layout in function of the coordinates
+<code>ROW</code> and <code>COLUMN</code>, you can use the the generic
+function <code>plot()</code> as follow,</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lsd)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p><br> <br> <br></p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

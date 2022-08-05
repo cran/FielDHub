@@ -16,6 +16,7 @@ optimized_arrangement(
   seed = NULL,
   exptName = NULL,
   locationNames = NULL,
+  optim = TRUE,
   data = NULL
 )
 }
@@ -42,6 +43,8 @@ optimized_arrangement(
 
 \item{locationNames}{(optional) Name for each location.}
 
+\item{optim}{By default \code{optim = TRUE}.}
+
 \item{data}{(optional) Data frame with 3 columns: \code{ENTRY | NAME | REPS}.}
 }
 \value{
@@ -50,7 +53,8 @@ A list with five elements.
   \item \code{infoDesign} is a list with information on the design parameters.
   \item \code{layoutRandom} is a matrix with the randomization layout.
   \item \code{plotNumber} is a matrix with the layout plot number.
-  \item \code{data_entry} is a data frame with the data input.
+  \item \code{dataEntry} is a data frame with the data input.
+  \item \code{genEntries} is a list with the entries for replicated and no replicated part.
   \item \code{fieldBook} is a data frame with field book design. This includes the index (Row, Column).
 }
 }
@@ -61,37 +65,44 @@ Note that design generation needs the dimension of the field (number of rows and
 }
 \examples{
 # Example 1: Generates a spatial unreplicated optimized arrangement design in one location
-# with 362 genotypes + 38 check plots (5 checks) for a field with dimension 20 rows x 20 cols.
-OptimAd1 <- optimized_arrangement(nrows = 20, ncols = 20, lines = 362, 
-                                  amountChecks = 38, 
-                                  checks = 1:5,
-                                  planter = "cartesian", 
-                                  plotNumber = 101,
-                                  seed = 14,
-                                  exptName = "20RW1",
-                                  locationNames = "CASSELTON")
+# with 108 genotypes + 12 check plots (4 checks) for a field with dimension 10 rows x 12 cols.
+OptimAd1 <- optimized_arrangement(
+  nrows = 10, 
+  ncols = 12, 
+  lines = 108, 
+  amountChecks = 12, 
+  checks = 1:4,
+  planter = "cartesian", 
+  plotNumber = 101,
+  seed = 14,
+  exptName = "20RW1",
+  locationNames = "CASSELTON"
+ )
 OptimAd1$infoDesign
 OptimAd1$layoutRandom
 OptimAd1$plotNumber
 head(OptimAd1$fieldBook,12)
                   
 # Example 2: Generates a spatial unreplicated optimized arrangement design in one location
-# with 635 genotypes + 65 check plots (4 checks) for a field with dimension 20 rows x 35 cols.
+# with 200 genotypes + 20 check plots (4 checks) for a field with dimension 10 rows x 22 cols.
 # As example, we set up the data option with the entries list.
 checks <- 4
 list_checks <- paste("CH", 1:checks, sep = "")
-treatments <- paste("G", 5:639, sep = "")
-REPS <- c(17, 16, 16, 16, rep(1, 635))
-treatment_list <- data.frame(list(ENTRY = 1:639, NAME = c(list_checks, treatments), REPS = REPS))
+treatments <- paste("G", 5:204, sep = "")
+REPS <- c(5, 5, 5, 5, rep(1, 200))
+treatment_list <- data.frame(list(ENTRY = 1:204, NAME = c(list_checks, treatments), REPS = REPS))
 head(treatment_list, 12) 
 tail(treatment_list, 12)
-OptimAd2 <- optimized_arrangement(nrows = 20, ncols = 35, 
-                                  planter = "serpentine", 
-                                  plotNumber = 101,
-                                  seed = 12,
-                                  exptName = "20YWA2",
-                                  locationNames = "MINOT",
-                                  data = treatment_list)
+OptimAd2 <- optimized_arrangement(
+  nrows = 10, 
+  ncols = 22, 
+  planter = "serpentine", 
+  plotNumber = 101,
+  seed = 120,
+  exptName = "20YWA2",
+  locationNames = "MINOT",
+  data = treatment_list
+)
 OptimAd2$infoDesign
 OptimAd2$layoutRandom
 OptimAd2$plotNumber

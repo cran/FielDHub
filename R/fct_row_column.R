@@ -50,13 +50,13 @@
 #' head(rowcold1$fieldBook,12)
 #' 
 #' # Example 2: Generates a row-column design with 3 full blocks and 30 treatments
-#' # and 5 rows, for two locations.
+#' # and 5 rows, for one location.
 #' # In this case, we show how to use the option data.
 #' treatments <- paste("ND-", 1:30, sep = "")
 #' ENTRY <- 1:30
 #' treatment_list <- data.frame(list(ENTRY = ENTRY, TREATMENT = treatments))
 #' head(treatment_list)
-#' rowcold2 <- row_column(t = 30, nrows = 5, r = 3, l = 2, 
+#' rowcold2 <- row_column(t = 30, nrows = 5, r = 3, l = 1, 
 #'                        plotNumber= c(101,1001), 
 #'                        locationNames = c("A", "B"),
 #'                        seed = 15,
@@ -100,7 +100,9 @@ row_column <- function(t = NULL, nrows = NULL, r = NULL, l = 1, plotNumber= 101,
     }else if ((length(t) > 1)) {
       nt <- length(t)
     }
-    data_RowCol <- NULL
+    df <- data.frame(list(ENTRY = 1:nt, TREATMENT = paste0("G-", 1:nt)))
+    data_RowCol <- df
+    lookup <- TRUE
   }else if (!is.null(data)) {
     if (is.null(t) || is.null(r) || is.null(k) || is.null(l)) {
       shiny::validate('Some of the basic design parameters are missing (t, r, k or l).')
@@ -156,7 +158,6 @@ row_column <- function(t = NULL, nrows = NULL, r = NULL, l = 1, plotNumber= 101,
       w <- w + 1
     }
   }
-  
   NEW_Resolvable <- setNames(vector(mode = "list", length = l),
                              paste0("Loc_", locationNames))
   x <- seq(1, r * l, r)
@@ -169,18 +170,22 @@ row_column <- function(t = NULL, nrows = NULL, r = NULL, l = 1, plotNumber= 101,
   }
   
   df <- OutRowCol
-  
-  if (is.null(data)) trt <- "ENTRY" else trt <- "TREATMENT"
+  trt <- "ENTRY" 
   c1 <- concurrence_matrix(df=df, trt=trt, target='REP')
   c2 <- concurrence_matrix (df=df, trt=trt, target='ROW')
   c3 <- concurrence_matrix (df=df, trt=trt, target='COLUMN')
   summ <- merge(c1, c2, by="Concurrence", all=TRUE)
   new_summ <- merge(summ, c3, by='Concurrence', all=TRUE)
-
-  
-  infoDesign <- list(nRows = nrows, nCols = ib, Reps = r, NumberTreatments = nt, 
-                     NumberLocations = l, Locations = locationNames, seed = seed,
-                     idDesign = 9)
+  infoDesign <- list(
+    rows = nrows, 
+    columns = ib, 
+    reps = r, 
+    treatments = nt, 
+    locations = l, 
+    location_names = locationNames, 
+    seed = seed,
+    id_design = 9
+  )
   output <- list(infoDesign = infoDesign, resolvableBlocks = NEW_Resolvable, 
                  concurrence = new_summ,
                  fieldBook = OutRowCol)

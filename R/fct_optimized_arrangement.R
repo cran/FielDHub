@@ -17,6 +17,7 @@
 #' @param exptName (optional) Name of the experiment.
 #' @param locationNames (optional) Name for each location.
 #' @param data (optional) Data frame with 3 columns: \code{ENTRY | NAME | REPS}.
+#' @param optim By default \code{optim = TRUE}.
 #' 
 #' @author Didier Murillo [aut],
 #'         Salvador Gezan [aut],
@@ -31,7 +32,8 @@
 #'   \item \code{infoDesign} is a list with information on the design parameters.
 #'   \item \code{layoutRandom} is a matrix with the randomization layout.
 #'   \item \code{plotNumber} is a matrix with the layout plot number.
-#'   \item \code{data_entry} is a data frame with the data input.
+#'   \item \code{dataEntry} is a data frame with the data input.
+#'   \item \code{genEntries} is a list with the entries for replicated and no replicated part.
 #'   \item \code{fieldBook} is a data frame with field book design. This includes the index (Row, Column).
 #' }
 #'
@@ -42,69 +44,106 @@
 #'
 #' @examples
 #' # Example 1: Generates a spatial unreplicated optimized arrangement design in one location
-#' # with 362 genotypes + 38 check plots (5 checks) for a field with dimension 20 rows x 20 cols.
-#' OptimAd1 <- optimized_arrangement(nrows = 20, ncols = 20, lines = 362, 
-#'                                   amountChecks = 38, 
-#'                                   checks = 1:5,
-#'                                   planter = "cartesian", 
-#'                                   plotNumber = 101,
-#'                                   seed = 14,
-#'                                   exptName = "20RW1",
-#'                                   locationNames = "CASSELTON")
+#' # with 108 genotypes + 12 check plots (4 checks) for a field with dimension 10 rows x 12 cols.
+#' OptimAd1 <- optimized_arrangement(
+#'   nrows = 10, 
+#'   ncols = 12, 
+#'   lines = 108, 
+#'   amountChecks = 12, 
+#'   checks = 1:4,
+#'   planter = "cartesian", 
+#'   plotNumber = 101,
+#'   seed = 14,
+#'   exptName = "20RW1",
+#'   locationNames = "CASSELTON"
+#'  )
 #' OptimAd1$infoDesign
 #' OptimAd1$layoutRandom
 #' OptimAd1$plotNumber
 #' head(OptimAd1$fieldBook,12)
 #'                   
 #' # Example 2: Generates a spatial unreplicated optimized arrangement design in one location
-#' # with 635 genotypes + 65 check plots (4 checks) for a field with dimension 20 rows x 35 cols.
+#' # with 200 genotypes + 20 check plots (4 checks) for a field with dimension 10 rows x 22 cols.
 #' # As example, we set up the data option with the entries list.
 #' checks <- 4
 #' list_checks <- paste("CH", 1:checks, sep = "")
-#' treatments <- paste("G", 5:639, sep = "")
-#' REPS <- c(17, 16, 16, 16, rep(1, 635))
-#' treatment_list <- data.frame(list(ENTRY = 1:639, NAME = c(list_checks, treatments), REPS = REPS))
+#' treatments <- paste("G", 5:204, sep = "")
+#' REPS <- c(5, 5, 5, 5, rep(1, 200))
+#' treatment_list <- data.frame(list(ENTRY = 1:204, NAME = c(list_checks, treatments), REPS = REPS))
 #' head(treatment_list, 12) 
 #' tail(treatment_list, 12)
-#' OptimAd2 <- optimized_arrangement(nrows = 20, ncols = 35, 
-#'                                   planter = "serpentine", 
-#'                                   plotNumber = 101,
-#'                                   seed = 12,
-#'                                   exptName = "20YWA2",
-#'                                   locationNames = "MINOT",
-#'                                   data = treatment_list)
+#' OptimAd2 <- optimized_arrangement(
+#'   nrows = 10, 
+#'   ncols = 22, 
+#'   planter = "serpentine", 
+#'   plotNumber = 101,
+#'   seed = 120,
+#'   exptName = "20YWA2",
+#'   locationNames = "MINOT",
+#'   data = treatment_list
+#' )
 #' OptimAd2$infoDesign
 #' OptimAd2$layoutRandom
 #' OptimAd2$plotNumber
 #' head(OptimAd2$fieldBook,12)
 #'                   
 #' @export
-optimized_arrangement <- function(nrows = NULL, ncols = NULL, lines = NULL,  amountChecks = NULL, checks = NULL,
-                                  planter = "serpentine", l = 1, plotNumber = 101, seed = NULL, exptName = NULL,
-                                  locationNames = NULL, data = NULL) {
-  
+optimized_arrangement <- function(nrows = NULL, ncols = NULL, lines = NULL,  
+                                  amountChecks = NULL, checks = NULL,
+                                  planter = "serpentine", l = 1, 
+                                  plotNumber = 101, seed = NULL, exptName = NULL,
+                                  locationNames = NULL, optim = TRUE, 
+                                  data = NULL) {
+  if (is.null(seed) || !is.numeric(seed)) seed <- runif(1, min = -50000, max = 50000)
   if (all(c("serpentine", "cartesian") != planter)) {
     base::stop('Input planter is unknown. Please, choose one: "serpentine" or "cartesian"')
   }
   
-  if (is.null(plotNumber)) {
-    plotNumber <- 1001
-    warning("Since plotNumber was missing, it was set up to default value of 1001")
-  }else if(!is.numeric(plotNumber)) {
-    stop("Input plotNumber can be an integer or a numeric vector.")
+  if(!is.numeric(plotNumber) && !is.integer(plotNumber)) {
+    stop("plotNumber should be an integer or a numeric vector.")
   }
+  
+  if (any(plotNumber %% 1 != 0)) {
+    stop("plotNumber should be integers.")
+  }
+  
+  if (!is.null(l)) {
+    if (is.null(plotNumber) || length(plotNumber) != l) {
+      if (l > 1){
+        plotNumber <- seq(1001, 1000*(l+1), 1000)
+      } else plotNumber <- 1001
+      message(cat("Warning message:", "\n", 
+      "Since plotNumber was missing, it was set up to default value of: ", plotNumber, "\n",
+      "\n"
+      ))
+    }
+  }else stop("Number of locations/sites is missing")
   
   if (!is.null(data)) {
     arg1 <- list(nrows, ncols, l);arg2 <- c(nrows, ncols, l)
     if (base::any(lengths(arg1) != 1) || base::any(arg2 %% 1 != 0) || base::any(arg2 < 1)) {
-      base::stop('"diagonal_arrangement()" requires arguments nrows, ncols, and l to be numeric and distint of NULL')
+      base::stop('"optimized_arrangement()" requires arguments nrows, ncols, and l to be numeric and distint of NULL')
     }
-  }else {
+  } else {
     arg1 <- list(nrows, ncols, lines, l);arg2 <- c(nrows, ncols, lines, l)
     if (base::any(lengths(arg1) != 1) || base::any(arg2 %% 1 != 0) || base::any(arg2 < 1)) {
-      base::stop('"diagonal_arrangement()" requires arguments nrows, ncols, and l to be numeric and distint of NULL')
+      base::stop('"optimized_arrangement()" requires arguments nrows, ncols, and l to be numeric and distint of NULL')
     }
   } 
+  
+  if(is.null(data)) {
+    if (length(checks) == 1 && checks > 1) {
+      checksEntries <- 1:checks
+      checks <- checks
+    }else if (length(checks) > 1) {
+      checksEntries <- sort(checks)
+      checks <- length(checks)
+    } else if (length(checks) == 1 && checks == 1) {
+      checksEntries <- checks
+      checks <- length(checks)
+    }
+  }
+  
   if (is.null(data)) {
     if (!is.null(checks) && is.numeric(checks) && all(checks %% 1 == 0) && 
         !is.null(amountChecks) && is.numeric(amountChecks) && all(amountChecks %% 1 == 0) &&
@@ -118,12 +157,12 @@ optimized_arrangement <- function(nrows = NULL, ncols = NULL, lines = NULL,  amo
           if (res == 0) {
             u <- amountChecks / checks
             RepChecks <- rep(u, checks)
-          }else {
+          } else {
             RepChecks <- rep(divs, checks - 1)
             RepChecks <- sample(c(RepChecks, amountChecks - sum(RepChecks)))
           }
         }
-      }else if (length(checks) > 1) {
+      } else if (length(checks) > 1) {
         if(any(any(checks != sort(checks)) || any(diff(checks) > 1))) {
           base::stop("Input checks must be in consecutive numbers and sorted.")
         } 
@@ -142,8 +181,37 @@ optimized_arrangement <- function(nrows = NULL, ncols = NULL, lines = NULL,  amo
           }
         }
       }
-    }else base::stop('"diagonal_arrangement()" requires inputs checks and amountChecks to be possitive integers and distinct of NULL.')
-  }else {
+    } else base::stop('"optimized_arrangement()" requires inputs checks and amountChecks to be possitive integers and distinct of NULL.')
+    t_plots <- as.numeric(sum(RepChecks) + lines)
+    print(t_plots)
+    if (numbers::isPrime(t_plots)) {
+      stop("No options when the total number of plots is a prime number.", call. = FALSE)
+    }
+    if (t_plots != (nrows * ncols)) {
+      choices <- factor_subsets(t_plots)$labels
+      if (!is.null(choices)) {
+        message(cat("\n", "Error in optimized_arrangement(): ", "\n", "\n",
+          "Field dimensions do not fit with the data entered!", "\n",
+          "Try one of the following options: ", "\n"))
+        return(for (i in 1:length(choices)) {print(choices[[i]])})
+      } else {
+        stop("field dimensions do not fit with the data entered", call. = FALSE)
+      }
+    }
+    NAME <- c(paste(rep("CH", checks), 1:checks, sep = ""),
+              paste(rep("G", lines), 
+              (checksEntries[checks] + 1):(checksEntries[1] + lines + checks - 1), sep = ""))
+    reps.checks <- RepChecks
+    REPS <- c(reps.checks, rep(1, lines))
+    gen.list <- data.frame(
+      list(
+        ENTRY = checksEntries[1]:(checksEntries[1] + lines + checks - 1),	
+        NAME = NAME,	
+        REPS = REPS
+      )
+    )
+    colnames(gen.list) <- c("ENTRY", "NAME", "REPS")
+  } else {
     if(!is.data.frame(data)) base::stop("Data must be a data frame.")
     gen.list <- data
     gen.list <- as.data.frame(gen.list)
@@ -158,91 +226,139 @@ optimized_arrangement <- function(nrows = NULL, ncols = NULL, lines = NULL,  amo
     checksEntries <- as.vector(my_REPS[,1])
     checks <- length(checksEntries)
     lines <- sum(my_GENS$REPS)
-  }
-  
-  if(is.null(data)) {
-    if (length(checks) == 1 && checks > 1) {
-      checksEntries <- 1:checks
-      checks <- checks
-    }else if (length(checks) > 1) {
-      checksEntries <- checks
-      checks <- length(checks)
-    } else if (length(checks) == 1 && checks == 1) {
-      checksEntries <- checks
-      checks <- length(checks)
+    t_plots <- sum(as.numeric(gen.list$REPS))
+    print(t_plots)
+    if (numbers::isPrime(t_plots)) {
+      stop("No options when the total number of plots is a prime number.", call. = FALSE)
+    }
+    if (t_plots != (nrows * ncols)) {
+      choices <- factor_subsets(t_plots)$labels
+      if (!is.null(choices)) {
+        message(cat("\n", "Error in optimized_arrangement(): ", "\n", "\n",
+          "Field dimensions do not fit with the data entered!", "\n",
+          "Try one of the following options: ", "\n"))
+        return(for (i in 1:length(choices)) {print(choices[[i]])})
+      } else {
+        stop("Field dimensions do not fit with the data entered. Try another amount of treatments!", call. = FALSE)
+      }
     }
   }
   
   all_gens <- sum(RepChecks) + lines
   if ((all_gens == nrows*ncols)) {
     Fillers <- 0
-  }else if (all_gens > nrows*ncols) {
-    shiny::validate("Data input exceeds the field dimentions specified.")
-  }else if (all_gens < nrows*ncols) {
-    shiny::validate("Data input is not large enough to completely use the field dimensions specified.")
   }
   
-  prep <- pREP(nrows = nrows, ncols = ncols, RepChecks = RepChecks, checks = checksEntries, Fillers = Fillers,
-               seed = seed, optim = TRUE, niter = 1000, data = data)
-  
-  dataInput <- prep$gen.list
-  BINAY_CHECKS <- prep$binary.field
-  
-  if (!is.null(exptName)) {
-    Name_expt <- exptName 
-  }else Name_expt <- "20ExptOptim"
-  
-  split_name_spat <- function(){
-    split_names <- base::matrix(data = Name_expt, nrow = nrows, ncol = ncols, byrow = TRUE)
-    return(list(my_names = split_names))
-  }
-  
-  plot_number_spat <- function(){
-    datos_name <- split_name_spat()$my_names
-    plot_n_start <- plotNumber
-    my_split_plot_nub <- plot_number(movement_planter = planter, n_blocks = 1, n_rows = nrows, n_cols = ncols,
-                                     plot_n_start = plot_n_start, datos = datos_name, expe_name = Name_expt, ByRow = FALSE,
-                                     my_row_sets = NULL, ByCol = TRUE, my_col_sets = ncols)
-  }
-  
-  if (is.null(locationNames)) locationNames <- 1:l
-  plot_num <- plot_number_spat()$w_map_letters1
-  plot_num <- apply(plot_num, c(1,2), as.numeric)
-  export_spat <- function(){
-    loc <- locationNames
+  field_book_sites <- vector(mode = "list", length = l)
+  layout_random_sites <- vector(mode = "list", length = l)
+  plot_numbers_sites <- vector(mode = "list", length = l)
+  col_checks_sites <- vector(mode = "list", length = l)
+  set.seed(seed)
+  for (sites in 1:l) {
+    
+    prep <- pREP(
+      nrows = nrows, 
+      ncols = ncols, 
+      RepChecks = RepChecks, 
+      checks = checksEntries, 
+      Fillers = Fillers,
+      seed = NULL, 
+      optim = TRUE,
+      niter = 1000, 
+      data = data
+    )
+    
+    dataInput <- prep$gen.list
+    BINAY_CHECKS <- prep$binary.field
     random_entries_map <- as.matrix(prep$field.map)
-    plot_num <- as.matrix(plot_num)
-    Col_checks <- as.matrix(BINAY_CHECKS)
-    my_names <- as.matrix(split_name_spat()$my_names)
-    year <- format(Sys.Date(), "%Y")
-    my_data_VLOOKUP <- prep$gen.list
-    results_to_export <- list(random_entries_map, plot_num, Col_checks, my_names)
-    final_expt_export <- export_design(G = results_to_export, movement_planter =  planter,
-                                       location = loc, Year = year, data_file = my_data_VLOOKUP,
-                                       reps = FALSE)
+    genEntries <- prep$gen.entries
     
-    return(list(final_expt = final_expt_export))
+    if (!is.null(exptName)) {
+      Name_expt <- exptName 
+    }else Name_expt <- "Expt1"
     
+    split_name_spat <- function() {
+      split_names <- base::matrix(data = Name_expt, nrow = nrows, ncol = ncols, byrow = TRUE)
+      return(list(my_names = split_names))
+    }
+ 
+    plot_number_spat <- function() {
+      datos_name <- split_name_spat()$my_names
+      plot_n_start <- plotNumber[sites]
+      
+      plot_number(
+        planter = planter,
+        plot_number_start = plot_n_start,
+        layout_names = datos_name,
+        expe_names = Name_expt,
+        fillers = 0
+      )
+    }
+    
+    if (is.null(locationNames) || length(locationNames) != l) locationNames <- 1:l
+    plot_num <- plot_number_spat()$w_map_letters1
+    plot_number_L <- apply(plot_num, c(1,2), as.numeric)
+    export_spat <- function() {
+      loc <- locationNames
+      random_entries_map <- as.matrix(prep$field.map)
+      plot_number_L <- as.matrix(plot_number_L)
+      Col_checks <- as.matrix(BINAY_CHECKS)
+      my_names <- as.matrix(split_name_spat()$my_names)
+      year <- format(Sys.Date(), "%Y")
+      my_data_VLOOKUP <- prep$gen.list
+      results_to_export <- list(random_entries_map, plot_number_L, Col_checks, my_names)
+      final_expt_export <- export_design(
+        G = results_to_export, 
+        movement_planter =  planter,
+        location = loc[sites], 
+        Year = year, 
+        data_file = my_data_VLOOKUP,
+        reps = FALSE
+      )
+      
+      return(list(final_expt = final_expt_export))
+      
+    }
+    
+    fieldBook <- as.data.frame(export_spat()$final_expt)
+    fieldBook <- fieldBook[,-11]
+    ID <- 1:nrow(fieldBook)
+    fieldBook <- fieldBook[, c(6,7,9,4,2,3,5,1,10)]
+    fieldBook <- cbind(ID, fieldBook)
+    colnames(fieldBook)[10] <- "TREATMENT"
+    layoutR = prep$field.map
+    rownames(layoutR) <- paste("Row", nrow(layoutR):1, sep = "")
+    colnames(layoutR) <- paste("Col", 1:ncol(layoutR), sep = "")
+    rownames(plot_num) <- paste("Row", nrow(plot_num):1, sep = "")
+    colnames(plot_num) <- paste("Col", 1:ncol(plot_num), sep = "")
+    
+    field_book_sites[[sites]] <- fieldBook
+    layout_random_sites[[sites]] <- layoutR
+    plot_numbers_sites[[sites]] <- plot_number_L
+    col_checks_sites[[sites]] <- as.matrix(BINAY_CHECKS)
   }
   
-  fieldBook <- as.data.frame(export_spat()$final_expt)
-  fieldBook <- fieldBook[,-11]
-  ID <- 1:nrow(fieldBook)
-  fieldBook <- fieldBook[, c(6,7,9,4,2,3,5,1,10)]
-  fieldBook <- cbind(ID, fieldBook)
-  colnames(fieldBook)[10] <- "TREATMENT"
-  # fieldBook <- fieldBook[, c(2,3,1,4:10)]
-  # rownames(fieldBook) <- 1:nrow(fieldBook)
-  layoutR = prep$field.map
-  rownames(layoutR) <- paste("Row", nrow(layoutR):1, sep = "")
-  colnames(layoutR) <- paste("Col", 1:ncol(layoutR), sep = "")
-  rownames(plot_num) <- paste("Row", nrow(plot_num):1, sep = "")
-  colnames(plot_num) <- paste("Col", 1:ncol(plot_num), sep = "")
+  field_book <- dplyr::bind_rows(field_book_sites)
   
-  infoDesign <- list(Lines = lines, checks = checksEntries, RepChecks = RepChecks, seed = seed,
-                     idDesign = 16)
-  output <- list(infoDesign = infoDesign, layoutRandom = layoutR, plotNumber = plot_num, 
-                 data_entry = dataInput, fieldBook = fieldBook)
+  infoDesign <- list(
+    # field_dimensions = c("rows" = nrows, "columns" = ncols),
+    rows = nrows,
+    columns = ncols,
+    treatments = lines, 
+    checks = length(RepChecks),
+    entry_checks = checksEntries,
+    rep_checks = RepChecks, 
+    locations = l, 
+    planter = planter,
+    seed = seed,
+    id_design = 16)
+  output <- list(infoDesign = infoDesign, 
+                 layoutRandom = layout_random_sites, 
+                 plotNumber = plot_numbers_sites,
+                 binaryField = col_checks_sites,
+                 dataEntry = dataInput,
+                 genEntries = genEntries,
+                 fieldBook = field_book)
   class(output) <- "FielDHub"
   return(invisible(output))
 }

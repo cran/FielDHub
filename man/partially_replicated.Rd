@@ -47,7 +47,8 @@ A list with five elements.
   \item \code{infoDesign} is a list with information on the design parameters.
   \item \code{layoutRandom} is a matrix with the randomization layout.
   \item \code{plotNumber} is a matrix with the layout plot number.
-  \item \code{data_entry} is a data frame with the data input.
+  \item \code{dataEntry} is a data frame with the data input.
+  \item \code{genEntries} is a list with the entries for replicated and no replicated part.
   \item \code{fieldBook} is a data frame with field book design. This includes the index (Row, Column).
 }
 }
@@ -58,16 +59,18 @@ Note that design generation needs the dimension of the field (number of rows and
 }
 \examples{
 # Example 1: Generates a spatial optimized partially replicated arrangement design in one 
-# location with 342 genotypes for a field with dimensions 25 rows x 18 cols. 
-# Note that there are 280 genotypes unreplicated (only one time), 50 genotypes replicated 
+# location with 312 genotypes for a field with dimensions 15 rows x 28 cols. 
+# Note that there are 250 genotypes unreplicated (only one time), 50 genotypes replicated 
 # two times, and 10 genotypes replicated three times, and two checks 20 times each one.
-SpatpREP1 <- partially_replicated(nrows = 25, 
-                                  ncols = 18,  
-                                  repGens = c(280,50,10,1,1),
-                                  repUnits = c(1,2,3,20,20),
-                                  planter = "cartesian", 
-                                  plotNumber = 101,
-                                  seed = 77)
+SpatpREP1 <- partially_replicated(
+  nrows = 15, 
+  ncols = 28,  
+  repGens = c(250,50,10,1,1),
+  repUnits = c(1,2,3,20,20),
+  planter = "cartesian", 
+  plotNumber = 101,
+  seed = 77
+ )
 SpatpREP1$infoDesign
 SpatpREP1$layoutRandom
 SpatpREP1$plotNumber
