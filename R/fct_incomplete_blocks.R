@@ -131,9 +131,31 @@ incomplete_blocks <- function(t = NULL, k = NULL, r = NULL, l = 1, plotNumber = 
 
   ibd_plots <- ibd_plot_numbers(nt = nt, plot.number = plotNumber, r = r, l = l)
   b <- nt/k
+  square <- FALSE
+  if (sqrt(nt) == round(sqrt(nt))) square <- TRUE
   outIBD_loc <- vector(mode = "list", length = l)
   for (i in 1:l) {
-    mydes <- blocksdesign::blocks(treatments = nt, replicates = r, blocks = list(r, b), seed = NULL)
+    if (square) {
+        mydes <- blocksdesign::blocks(treatments = nt, replicates = r + 1, blocks = list(r + 1, b), seed = NULL)
+        ##### Dropping the cyclical REP ######
+        rep_to_drop <- mydes$Design %>%
+            dplyr::group_by(Level_1, Level_2) %>%
+            dplyr::mutate(treatments = as.numeric(treatments)) %>%
+            dplyr::summarise(dif = sum(diff(sort(treatments)))/(dplyr::n()-1)) %>%
+            dplyr::filter(dif == 1) %>%
+            dplyr::pull(Level_1) %>%
+            unique()
+        if (length(rep_to_drop) > 0) {
+            mydes$Design <- mydes$Design %>%
+                dplyr::filter(Level_1 != rep_to_drop) %>%
+                dplyr::mutate(Level_1 = rep(paste0("B", 1:r), each = nt))
+        } else {
+            mydes$Design <- mydes$Design %>%
+                dplyr::filter(Level_1 != paste0("B", r + 1)) 
+        }
+    } else {
+        mydes <- blocksdesign::blocks(treatments = nt, replicates = r, blocks = list(r, b), seed = NULL)
+    }
     matdf <- base::data.frame(list(LOCATION = rep(locationNames[i], each = N)))
     matdf$PLOT <- as.numeric(unlist(ibd_plots[[i]]))
     matdf$BLOCK <- rep(c(1:r), each = nt)
@@ -163,4 +185,36 @@ incomplete_blocks <- function(t = NULL, k = NULL, r = NULL, l = 1, plotNumber = 
   output <- list(infoDesign = infoDesign, fieldBook = OutIBD_new)
   class(output) <- "FielDHub"
   return(invisible(output))
+}
+
+#' @noRd 
+#' 
+#' 
+concurrence_matrix <- function(df=NULL, trt=NULL, target=NULL) {
+  if (is.null(df)) {
+    stop('No input dataset provided.')
+  }
+  if (is.null(trt)) {
+    stop('No input treatment factor provided.')
+  }
+  if (is.null(target)) {
+    stop('No input target design factor provided.')
+  }
+  df[,target]<-as.factor(df[,target])
+  df[,trt]<-as.factor(df[,trt])
+  s <- length(levels(df[,target]))
+  if (s==0) { stop('No levels found for design factor provided.') }
+  inc <- as.matrix(table(df[,target],df[,trt]))
+  for (i in 1:s) {
+    inc[inc[,i]>0,i] <- 1
+  }
+  conc.matrix <- t(inc) %*% inc
+  summ.rep <- diag(conc.matrix)
+  diag(conc.matrix) <- rep(99999999,nrow(conc.matrix))
+  summ<-as.data.frame(table(as.vector(conc.matrix)))
+  summ$Freq <- summ$Freq/2  # Added
+  colnames(summ) <- c('Concurrence',target)
+  summ <- summ[-nrow(summ),]
+  
+  return(summ = summ)
 }

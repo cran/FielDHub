@@ -10,6 +10,7 @@
 mod_SSPD_ui <- function(id){
   ns <- NS(id)
   tagList(
+    h4("Split-Split-Plot Design"),
     sidebarLayout(
       sidebarPanel(
         width = 4,
@@ -98,7 +99,7 @@ mod_SSPD_ui <- function(id){
         ),
         
         numericInput(inputId = ns("seed.sspd"), 
-                     label = "Seed Number:", 
+                     label = "Random Seed:", 
                      value = 123, 
                      min = 1),
         

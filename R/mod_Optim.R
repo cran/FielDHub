@@ -43,14 +43,14 @@ mod_Optim_ui <- function(id) {
           ns = ns,
           numericInput(ns("checks.s"),
                         label = "Input # of Checks:", 
-                        value = 3,
+                        value = 4,
                         min = 1),
           textInput(ns("amount.checks"), 
                     "Input # Check's Reps:",
-                    value = "10,10,10"),
+                    value = "8,8,8,8"),
           numericInput(ns("lines.s"), 
                       label = "Input # of Entries:",
-                      value = 270, min = 5)           
+                      value = 280, min = 5)           
        ),
        selectInput(ns("planter_mov.spatial"), 
                    label = "Plot Order Layout:",
@@ -75,10 +75,11 @@ mod_Optim_ui <- function(id) {
        ),
        fluidRow(
          column(6,style=list("padding-right: 28px;"),
-                numericInput(ns("seed.spatial"), 
-                             label = "Seed Number:", 
-                             value = 1,
-                             min = 1)
+                textInput(
+                    ns("plot_start.spatial"), 
+                    "Starting Plot Number:", 
+                    value = 1
+                )
          ),
          column(6,style=list("padding-left: 5px;"),
                 textInput(ns("expt_name.spatial"), 
@@ -88,10 +89,15 @@ mod_Optim_ui <- function(id) {
        ),  
        
        fluidRow(
-         column(6,style=list("padding-right: 28px;"),
-                textInput(ns("plot_start.spatial"), 
-                          "Starting Plot Number:", 
-                          value = 1)
+         column(
+            width = 6,
+            style=list("padding-right: 28px;"),
+            numericInput(
+                ns("seed.spatial"), 
+                label = "Random Seed:", 
+                value = 5,
+                min = 1
+            )
          ),
          column(6,style=list("padding-left: 5px;"),
                 textInput(ns("Location.spatial"), 
@@ -248,11 +254,25 @@ mod_Optim_server <- function(id) {
         req(input$checks.s)
         r.checks <- as.numeric(unlist(strsplit(input$amount.checks, ",")))
         checks.s <- as.numeric(input$checks.s)
-        if(checks.s != length(r.checks)) validate("The number of checks and the length of the reps vector must be equal.")
+        if(checks.s != length(r.checks)) {
+          shinyalert::shinyalert(
+            "Error!!",
+            "The number of checks and the length of the reps vector must be equal.",
+            type = "error"
+          )
+          return(NULL)
+        } 
         total.checks <- sum(r.checks)
         n.checks <- as.numeric(input$checks.s)
         lines <- as.numeric(input$lines.s)
-        if (lines <= sum(total.checks)) validate("Number of lines should be greater then the number of checks.")
+        if (lines <= sum(total.checks)) {
+          shinyalert::shinyalert(
+            "Error!!",
+            "Number of lines should be greater then the number of checks.",
+            type = "error"
+          )
+          return(NULL)
+        }
         NAME <- c(paste0(rep("CH", n.checks), 1:n.checks),
                   paste(rep("G", lines), (n.checks + 1):(lines + n.checks), sep = ""))
         reps.checks <- r.checks
@@ -261,10 +281,30 @@ mod_Optim_server <- function(id) {
         data_up <- gen.list
         total_plots <- sum(data_up$REPS)
       }
+      prime_factors <- numbers::primeFactors(total_plots)
+      if (length(prime_factors) == 2) {
+        if (prime_factors[1] < 4 & numbers::isPrime(prime_factors[2])) {
+          shinyalert::shinyalert(
+            "Error!!",
+            "There are no options available for field dimensions. Please try a different number of treatments or checks.",
+            type = "error"
+          )
+          return(NULL)
+        }
+      }
+      if (numbers::isPrime(total_plots)) {
+        shinyalert::shinyalert(
+          "Error!!",
+          "The number of field plots results in a prime number. Please try a different number of treatments.",
+          type = "error"
+        )
+        return(NULL)
+      }
       return(list(data_up.spatial = data_up, total_plots = total_plots))
     })
     
     list_inputs <- eventReactive(input$RUN.optim, {
+      req(get_data_optim())
       if (input$owndataOPTIM != 'Yes') {
         req(input$amount.checks)
         req(input$lines.s)
@@ -278,6 +318,7 @@ mod_Optim_server <- function(id) {
     })
     
     observeEvent(list_inputs(), {
+      req(get_data_optim())
       req(input$owndataOPTIM)
       if (input$owndataOPTIM != 'Yes') {
         req(input$amount.checks)
@@ -293,13 +334,24 @@ mod_Optim_server <- function(id) {
       }
       if(is.null(choices)){
         choices <- "No options available"
-      } 
+      }
+      if (!is.null(choices)) {
+        dif <- vector(mode = "numeric", length = length(choices))
+        for (option in 1:length(choices)) {
+          dims <- unlist(strsplit(choices[[option]], " x "))
+          dif[option] <- abs(as.numeric(dims[1]) - as.numeric(dims[2]))
+        }
+        df_choices <- data.frame(choices = unlist(choices), diff_dim = dif)
+        df_choices <- df_choices[order(df_choices$diff_dim, decreasing = FALSE), ]
+        choices <- as.vector(df_choices$choices)
+      }
       updateSelectInput(inputId = "dimensions.s", 
                         choices = choices, 
                         selected = choices[1])
     })
     
     field_dimensions_optim <- eventReactive(input$get_random_optim, {
+      req(get_data_optim())
       dims <- unlist(strsplit(input$dimensions.s," x "))
       d_row <- as.numeric(dims[1])
       d_col <- as.numeric(dims[2])
@@ -377,6 +429,7 @@ mod_Optim_server <- function(id) {
     })
 
     output$data_input <- DT::renderDT({
+      req(get_data_optim())
       if (input$dimensions.s == "No options available"){
         validate("No options available for this number of treatments")
       }
@@ -399,6 +452,7 @@ mod_Optim_server <- function(id) {
     })
     
     output$table_checks <- DT::renderDT({
+      req(get_data_optim())
       if (input$dimensions.s == "No options available") {
         validate("No options available for this number of treatments")
       }
@@ -416,6 +470,7 @@ mod_Optim_server <- function(id) {
     })
     
     optimized_arrang <- eventReactive(input$get_random_optim, { 
+      req(get_data_optim())
       if (input$dimensions.s == "No options available") {
         validate("No options available for this number of treatments")
       }
@@ -449,6 +504,7 @@ mod_Optim_server <- function(id) {
     })
 
     output$summary_optim <- renderPrint({
+      req(get_data_optim())
       test <- randomize_hit_optim$times > 0 & user_tries_optim$tries_optim > 0
       #if (!test) return(NULL)
       if (test) {
@@ -464,6 +520,7 @@ mod_Optim_server <- function(id) {
     })
 
     output$BINARY <- DT::renderDT({
+      req(get_data_optim())
       test <- randomize_hit_optim$times > 0 & user_tries_optim$tries_optim > 0
       if (!test) return(NULL)
       # if (user_tries_optim$tries_optim < 1) return(NULL)

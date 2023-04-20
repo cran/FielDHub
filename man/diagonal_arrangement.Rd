@@ -18,6 +18,7 @@ diagonal_arrangement(
   blocks = NULL,
   exptName = NULL,
   locationNames = NULL,
+  multiLocationData = FALSE,
   data = NULL
 )
 }
@@ -53,6 +54,9 @@ If \code{kindExpt = 'DBUDC'} and data is null, \code{blocks} are mandatory.}
 \item{exptName}{(optional) Name of the experiment.}
 
 \item{locationNames}{(optional) Names each location.}
+
+\item{multiLocationData}{(optional) Option to pass an entry list for multiple locations. 
+By default \code{multiLocationData = FALSE}.}
 
 \item{data}{(optional) Data frame with 2 columns: \code{ENTRY | NAME }.}
 }
@@ -111,7 +115,7 @@ spatDB <- diagonal_arrangement(
   splitBy = "row", 
   blocks = c(150,155,95,200,120),
   data = treatment_list
- )
+)
 spatDB$infoDesign
 spatDB$layoutRandom
 spatDB$plotsNumber
@@ -120,14 +124,18 @@ head(spatDB$fieldBook,12)
 # Example 3: Generates a spatial decision block diagonal arrangement design in one location
 # with 270 treatments allocated in 3 experiments or blocks for a field with dimensions
 # 20 rows x 15 cols in a serpentine arrangement. Which in turn is an augmented block (3 blocks).
-spatAB <- diagonal_arrangement(nrows = 20, ncols = 15, lines = 270, 
-                               checks = 4, 
-                               plotNumber = c(1,1001,2001), 
-                               kindExpt = "DBUDC", 
-                               planter = "serpentine",
-                               exptName = c("20WRA", "20WRB", "20WRC"), 
-                               blocks = c(90, 90, 90),
-                               splitBy = "column")
+spatAB <- diagonal_arrangement(
+  nrows = 20, 
+  ncols = 15, 
+  lines = 270, 
+  checks = 4, 
+  plotNumber = c(1,1001,2001), 
+  kindExpt = "DBUDC", 
+  planter = "serpentine",
+  exptName = c("20WRA", "20WRB", "20WRC"), 
+  blocks = c(90, 90, 90),
+  splitBy = "column"
+)
 spatAB$infoDesign
 spatAB$layoutRandom
 spatAB$plotsNumber

@@ -15,13 +15,14 @@ partially_replicated(
   seed = NULL,
   exptName = NULL,
   locationNames = NULL,
+  multiLocationData = FALSE,
   data = NULL
 )
 }
 \arguments{
-\item{nrows}{Number of rows field.}
+\item{nrows}{Numeric vector with the number of rows field at each location.}
 
-\item{ncols}{Number of columns field.}
+\item{ncols}{Numeric vector with the number of columns field at each location.}
 
 \item{repGens}{Numeric vector with the amount genotypes to replicate.}
 
@@ -39,64 +40,89 @@ partially_replicated(
 
 \item{locationNames}{(optional) Name for each location.}
 
-\item{data}{(optional) Dataframe with 3 columns: \code{ENTRY | NAME | REPS}.}
+\item{multiLocationData}{(optional) Option to pass an entry list for multiple locations. 
+By default \code{multiLocationData = FALSE}.}
+
+\item{data}{(optional) Data frame with 3 columns: \code{ENTRY | NAME | REPS}. If
+\code{multiLocationData = TRUE} then the \code{data} must have
+4 columns: \code{LOCATION | ENTRY | NAME | REPS}}
 }
 \value{
-A list with five elements.
+A list with several elements.
 \itemize{
   \item \code{infoDesign} is a list with information on the design parameters.
   \item \code{layoutRandom} is a matrix with the randomization layout.
   \item \code{plotNumber} is a matrix with the layout plot number.
+  \item \code{binaryField} is a matrix with the binary field.
   \item \code{dataEntry} is a data frame with the data input.
-  \item \code{genEntries} is a list with the entries for replicated and no replicated part.
+  \item \code{genEntries} is a list with the entries for replicated and non-replicated parts.
   \item \code{fieldBook} is a data frame with field book design. This includes the index (Row, Column).
+  \item \code{min_pairswise_distance} is a data frame with the minimum pairwise distance between 
+          each pair of locations.
+  \item \code{reps_info} is a data frame with information on the number of replicated and 
+          non-replicated treatments at each location.
+  \item \code{pairsDistance} is a data frame with the pairwise distances between each pair of 
+          treatments.
+  \item \code{treatments_with_reps} is a list with the entries for the replicated part of the design.
+  \item \code{treatments_with_no_reps} is a list with the entries for the non-replicated part of the design.
 }
 }
 \description{
-Randomly generates a spatial partially replicated design, where the distance 
-between checks is maximized in such a way that each row and column have control plots. 
-Note that design generation needs the dimension of the field (number of rows and columns).
+Randomly generates a spatial partially replicated (p-rep) design for single or multiple locations.
+}
+\details{
+This function generates and optimizes a partially replicated (p-rep) experimental design for a 
+given set of treatments and replication levels. The design is represented by a matrix and optimized 
+using a pairwise distance metric. The function outputs various information about the optimized design 
+including the field layout, replicated and unreplicated treatments, and pairwise distances between 
+treatments. Note that the design generation needs the dimension of the field (number of rows and columns).
 }
 \examples{
 # Example 1: Generates a spatial optimized partially replicated arrangement design in one 
-# location with 312 genotypes for a field with dimensions 15 rows x 28 cols. 
-# Note that there are 250 genotypes unreplicated (only one time), 50 genotypes replicated 
-# two times, and 10 genotypes replicated three times, and two checks 20 times each one.
-SpatpREP1 <- partially_replicated(
-  nrows = 15, 
-  ncols = 28,  
-  repGens = c(250,50,10,1,1),
-  repUnits = c(1,2,3,20,20),
-  planter = "cartesian", 
-  plotNumber = 101,
-  seed = 77
- )
-SpatpREP1$infoDesign
-SpatpREP1$layoutRandom
-SpatpREP1$plotNumber
-head(SpatpREP1$fieldBook,12)
+# location with 335 genotypes for a field with dimensions 15 rows x 28 cols. 
+# Note that there are 250 genotypes unreplicated (only one time), 85 genotypes replicated 
+# two times, and three checks 8 times each.
+\dontrun{
+prep_deseign1 <- partially_replicated(
+ nrows = 12, 
+ ncols = 37,  
+ repGens = c(250, 85, 3),
+ repUnits = c(1, 2, 8),
+ planter = "cartesian", 
+ plotNumber = 101,
+ seed = 77
+)
+prep_deseign1$infoDesign
+prep_deseign1$layoutRandom
+prep_deseign1$plotNumber
+head(prep_deseign1$fieldBook, 12)
+}
 
 # Example 2: Generates a spatial optimized partially replicated arrangement design with 492 
 # genotypes in a field with dimensions 30 rows x 20 cols. Note that there 384 genotypes 
 # unreplicated (only one time), 108 genotypes replicated two times. 
 # In this case we don't have check plots.
 # As example, we set up the data option with the entries list.
+\dontrun{
 NAME <- paste("G", 1:492, sep = "")
 repGens = c(108, 384);repUnits = c(2,1)
 REPS <- rep(repUnits, repGens)
 treatment_list <- data.frame(list(ENTRY = 1:492, NAME = NAME, REPS = REPS))
 head(treatment_list, 12) 
 tail(treatment_list, 12)
-SpatpREP2 <- partially_replicated(nrows = 30, 
-                                  ncols = 20, 
-                                  planter = "serpentine", 
-                                  plotNumber = 101,
-                                  seed = 41,
-                                  data = treatment_list)
-SpatpREP2$infoDesign
-SpatpREP2$layoutRandom
-SpatpREP2$plotNumber
-head(SpatpREP2$fieldBook,10)
+prep_deseign2 <- partially_replicated(
+  nrows = 30, 
+  ncols = 20, 
+  planter = "serpentine", 
+  plotNumber = 101,
+  seed = 41,
+  data = treatment_list
+)
+prep_deseign2$infoDesign
+prep_deseign2$layoutRandom
+prep_deseign2$plotNumber
+head(prep_deseign2$fieldBook, 10)
+}
 
 }
 \references{
@@ -109,6 +135,7 @@ Didier Murillo [aut],
         Salvador Gezan [aut],
         Ana Heilman [ctb],
         Thomas Walk [ctb], 
-        Johan Aparicio [ctb], 
+        Johan Aparicio [ctb],
+        Jean-Marc Montpetit [ctb],
         Richard Horsley [ctb]
 }

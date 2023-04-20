@@ -7,6 +7,27 @@ knitr::opts_chunk$set(
   message = FALSE
 )
 
+## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+set.seed(123)
+X <- matrix(sample(c(rep(1:10, 2), 11:50), replace = FALSE), ncol = 10)
+X[2,2] <- 5
+X[2,3] <- 33
+print(X)
+
+## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+dist_X <- FielDHub:::pairs_distance(X = X)
+print(dist_X)
+
+## -----------------------------------------------------------------------------
+library(FielDHub)
+B <- swap_pairs(X, starting_dist = 3)
+
+## -----------------------------------------------------------------------------
+print(B$optim_design)
+
+## -----------------------------------------------------------------------------
+print(B$pairswise_distance)
+
 ## ---- eval=FALSE--------------------------------------------------------------
 #  FielDHub::run_app()
 

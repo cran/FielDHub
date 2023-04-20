@@ -11,7 +11,7 @@
 mod_Diagonal_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    h5("Unreplicated Single Diagonal Arrangement"),
+    h4("Unreplicated Single Diagonal Arrangement"),
     sidebarLayout(
       sidebarPanel(
         width = 4,
@@ -44,7 +44,7 @@ mod_Diagonal_ui <- function(id) {
           ns = ns,
           numericInput(inputId = ns("lines.d"), 
                        label = "Input # of Entries:",
-                       value = 270, 
+                       value = 287, 
                        min = 50),
         ),
         selectInput(inputId = ns("checks"),
@@ -73,33 +73,37 @@ mod_Diagonal_ui <- function(id) {
                     multiple = FALSE,
                     selected = "serpentine"),
         fluidRow(
-          column(6,
-                 style=list("padding-right: 28px;"),
-                 numericInput(inputId = ns("seed_single"), 
-                              label = "Seed Number:", 
-                              value = 17, 
-                              min = 1)
-          ),
-          column(6,
-                 style=list("padding-left: 5px;"),
-                 textInput(ns("expt_name"), 
-                           "Input Experiment Name:", 
-                           value = "Expt1")
-          )
+            column(
+                width = 6,
+                style=list("padding-right: 28px;"),
+                textInput(
+                    ns("plot_start"), 
+                    "Starting Plot Number:", 
+                    value = 1
+                )
+            ),
+            column(6,
+                    style=list("padding-left: 5px;"),
+                    textInput(ns("expt_name"), 
+                            "Input Experiment Name:", 
+                            value = "Expt1")
+            )
         ),    
         fluidRow(
-          column(6,
-                 style=list("padding-right: 28px;"),
-                 textInput(ns("plot_start"), 
-                           "Starting Plot Number:", 
-                           value = 1)
-          ),
-          column(6,
-                 style=list("padding-left: 5px;"),
-                 textInput(ns("Location"), 
-                           "Input the Location:",
-                           value = "FARGO")
-          )
+            column(6,
+                    style=list("padding-right: 28px;"),
+                    numericInput(
+                        inputId = ns("seed_single"), 
+                        label = "Random Seed:", 
+                        value = 17, 
+                        min = 1)
+            ),
+            column(6,
+                    style=list("padding-left: 5px;"),
+                    textInput(ns("Location"), 
+                            "Input the Location:",
+                            value = "FARGO")
+            )
         ),
         fluidRow(
           column(6,
@@ -272,68 +276,86 @@ mod_Diagonal_server <- function(id) {
                                                  selected = "tabPanel1"))
                                                   
     getData <- eventReactive(input$RUN.diagonal, {
-    # getData <- reactive({
-      Sys.sleep(2)
-      Option_NCD <- TRUE
-      if (input$owndataDIAGONALS == "Yes") {
-        req(input$file1)
-        inFile <- input$file1
-        data_ingested <- load_file(name = inFile$name, 
-                                path = inFile$datapat, 
-                                sep = input$sep.DIAGONALS, check = TRUE, design = "sdiag")
-        
-        if (names(data_ingested) == "dataUp") {
-          data_up <- data_ingested$dataUp
-          data_entry <- na.omit(data_up)
-          if (ncol(data_entry) < 2) {
-            validate("Data input needs at least two Columns with the ENTRY and NAME.")
-          } 
-          data_entry_UP <- data_entry[,1:2]
-          colnames(data_entry_UP) <- c("ENTRY", "NAME")
-          checksEntries <- as.numeric(data_entry_UP[1:input$checks,1])
-          dim_data_entry <- nrow(data_entry_UP)
-          dim_data_1 <- nrow(data_entry_UP[(length(checksEntries) + 1):nrow(data_entry_UP), ])
-          return(list(data_entry = data_entry_UP, 
-                      dim_data_entry = dim_data_entry, 
-                      dim_without_checks = dim_data_1))
-        } else if (names(data_ingested) == "bad_format") {
-          shinyalert::shinyalert(
-            "Error!!", 
-            "Invalid file; Please upload a .csv file.", 
-            type = "error")
-          error_message <- "Invalid file; Please upload a .csv file."
-          return(NULL)
-        } else if (names(data_ingested) == "duplicated_vals") {
-          shinyalert::shinyalert(
-            "Error!!", 
-            "Check input file for duplicate values.", 
-            type = "error")
-          error_message <- "Check input file for duplicate values."
-          return(NULL)
-        } else if (names(data_ingested) == "missing_cols") {
-          shinyalert::shinyalert(
-            "Error!!", 
-            "Data input needs at least two columns: ENTRY and NAME",
-            type = "error")
-          return(NULL)
-        }
-      } else {
-          req(input$lines.d)
-          req(input$checks)
-          checks <- as.numeric(input$checks)
-          checksEntries <- 1:checks
-          lines <- input$lines.d
-          NAME <- c(paste(rep("CH", checks), 1:checks, sep = ""),
+        Option_NCD <- TRUE
+        if (input$owndataDIAGONALS == "Yes") {
+            req(input$file1)
+            inFile <- input$file1
+            data_ingested <- load_file(
+                name = inFile$name, 
+                path = inFile$datapat, 
+                sep = input$sep.DIAGONALS, 
+                check = TRUE, 
+                design = "sdiag"
+            )
+            if (names(data_ingested) == "dataUp") {
+                data_up <- data_ingested$dataUp
+                if (ncol(data_up) < 2) {
+                    validate("Data input needs at least two Columns with the ENTRY and NAME.")
+                } 
+                data_entry_UP <- na.omit(data_up[,1:2])
+                colnames(data_entry_UP) <- c("ENTRY", "NAME")
+                checksEntries <- as.numeric(data_entry_UP[1:input$checks,1])
+                dim_data_entry <- nrow(data_entry_UP)
+                choices_list <- field_dimensions(lines_within_loc = dim_data_entry)
+                if (length(choices_list) == 0) {
+                    shinyalert::shinyalert(
+                        "Error!!", 
+                        "Insufficient number of entries provided!",
+                        type = "error"
+                    )
+                    return(NULL)
+                }
+                dim_data_1 <- nrow(data_entry_UP[(length(checksEntries) + 1):nrow(data_entry_UP), ])
+                return(list(data_entry = data_entry_UP, 
+                            dim_data_entry = dim_data_entry, 
+                            dim_without_checks = dim_data_1))
+            } else if (names(data_ingested) == "bad_format") {
+            shinyalert::shinyalert(
+                "Error!!", 
+                "Invalid file; Please upload a .csv file.", 
+                type = "error")
+            error_message <- "Invalid file; Please upload a .csv file."
+            return(NULL)
+            } else if (names(data_ingested) == "duplicated_vals") {
+            shinyalert::shinyalert(
+                "Error!!", 
+                "Check input file for duplicate values.", 
+                type = "error")
+            error_message <- "Check input file for duplicate values."
+            return(NULL)
+            } else if (names(data_ingested) == "missing_cols") {
+            shinyalert::shinyalert(
+                "Error!!", 
+                "Data input needs at least two columns: ENTRY and NAME",
+                type = "error")
+            return(NULL)
+            }
+        } else {
+            req(input$lines.d)
+            req(input$checks)
+            checks <- as.numeric(input$checks)
+            checksEntries <- 1:checks
+            lines <- input$lines.d
+            choices_list <- field_dimensions(lines_within_loc = lines)
+            if (length(choices_list) == 0) {
+                shinyalert::shinyalert(
+                    "Error!!", 
+                    "Insufficient number of entries provided!",
+                    type = "error"
+                )
+                return(NULL)
+            }
+            NAME <- c(paste(rep("CH", checks), 1:checks, sep = ""),
                     paste(rep("G", lines), (checks + 1):(lines + checks), sep = ""))
-          gen.list <- data.frame(list(ENTRY = 1:(lines + checks),	NAME = NAME))
-          data_entry_UP <- gen.list
-          colnames(data_entry_UP) <- c("ENTRY", "NAME")
-          dim_data_entry <- nrow(data_entry_UP)
-          dim_data_1 <- nrow(data_entry_UP[(length(checksEntries) + 1):nrow(data_entry_UP), ])
-          return(list(data_entry = data_entry_UP, 
-                 dim_data_entry = dim_data_entry, 
-                 dim_without_checks = dim_data_1))
-      }
+            gen.list <- data.frame(list(ENTRY = 1:(lines + checks),	NAME = NAME))
+            data_entry_UP <- gen.list
+            colnames(data_entry_UP) <- c("ENTRY", "NAME")
+            dim_data_entry <- nrow(data_entry_UP)
+            dim_data_1 <- nrow(data_entry_UP[(length(checksEntries) + 1):nrow(data_entry_UP), ])
+            return(list(data_entry = data_entry_UP, 
+                    dim_data_entry = dim_data_entry, 
+                    dim_without_checks = dim_data_1))
+        }
     })
     
     getChecks <- eventReactive(input$RUN.diagonal, {
@@ -357,11 +379,11 @@ mod_Diagonal_server <- function(id) {
       checks <- as.numeric(getChecks()$checks)
       total_entries <- as.numeric(getData()$dim_data_entry)
       lines <- total_entries - checks
-      t1 <- floor(lines + lines * 0.08)
+      t1 <- floor(lines + lines * 0.11)
       t2 <- ceiling(lines + lines * 0.20)
       t <- t1:t2
       n <- t[-numbers::isPrime(t)]
-      withProgress(message = 'Calculation in progress', {
+      withProgress(message = 'Getting field dimensions ...', {
         choices_list <- list()
         i <- 1
         for (n in t) {
@@ -377,7 +399,6 @@ mod_Diagonal_server <- function(id) {
         new_choices <- list()
         v <- 1
         by_choices <- 1:length(choices)
-        # withProgress(message = 'Calculation in progress', {
         for (dim_options in by_choices) {
           
           planter_mov <- single_inputs()$planter_mov
@@ -386,26 +407,36 @@ mod_Diagonal_server <- function(id) {
           n_rows <- as.numeric(dims[1])
           n_cols  <- as.numeric(dims[2])
           
-          dt_options <- available_percent(n_rows = n_rows,
-                                          n_cols = n_cols,
-                                          checks = checksEntries,
-                                          Option_NCD = Option_NCD,
-                                          kindExpt = kindExpt_single,
-                                          stacked = input$stacked,
-                                          planter_mov1 = planter_mov,
-                                          data = getData()$data_entry,
-                                          dim_data = getData()$dim_data_entry,
-                                          dim_data_1 = getData()$dim_without_checks,
-                                          Block_Fillers = NULL)
+          dt_options <- available_percent(
+            n_rows = n_rows,
+            n_cols = n_cols,
+            checks = checksEntries,
+            Option_NCD = Option_NCD,
+            kindExpt = kindExpt_single,
+            stacked = input$stacked,
+            planter_mov1 = planter_mov,
+            data = getData()$data_entry,
+            dim_data = getData()$dim_data_entry,
+            dim_data_1 = getData()$dim_without_checks,
+            Block_Fillers = NULL
+          )
           if (!is.null(dt_options$dt)) {
             new_choices[[v]] <- choices[[dim_options]]
             v <- v + 1
           }
         }
+        dif <- vector(mode = "numeric", length = length(new_choices))
+        for (option in 1:length(new_choices)) {
+          dims <- unlist(strsplit(new_choices[[option]], " x "))
+          dif[option] <- abs(as.numeric(dims[1]) - as.numeric(dims[2]))
+        }
+        df_choices <- data.frame(choices = unlist(new_choices), diff_dim = dif)
+        df_choices <- df_choices[order(df_choices$diff_dim, decreasing = FALSE), ]
+        sort_choices <- as.vector(df_choices$choices)
       })
       updateSelectInput(inputId = "dimensions.d",
-                        choices = new_choices,
-                        selected = new_choices[1])
+                        choices = sort_choices,
+                        selected = sort_choices[1])
     })
     
     observeEvent(input$RUN.diagonal, {
@@ -464,17 +495,19 @@ mod_Diagonal_server <- function(id) {
       planter_mov <- single_inputs()$planter_mov
       n_rows <- field_dimensions_diagonal()$d_row
       n_cols <- field_dimensions_diagonal()$d_col
-      available_percent(n_rows = n_rows, 
-                        n_cols = n_cols, 
-                        checks = checksEntries, 
-                        Option_NCD = Option_NCD, 
-                        kindExpt = kindExpt_single, 
-                        stacked = input$stacked, 
-                        planter_mov1 = planter_mov,
-                        data = getData()$data_entry, 
-                        dim_data = getData()$dim_data_entry,
-                        dim_data_1 = getData()$dim_without_checks, 
-                        Block_Fillers = NULL)
+      available_percent(
+          n_rows = n_rows, 
+          n_cols = n_cols, 
+          checks = checksEntries, 
+          Option_NCD = Option_NCD, 
+          kindExpt = kindExpt_single, 
+          stacked = input$stacked, 
+          planter_mov1 = planter_mov,
+          data = getData()$data_entry, 
+          dim_data = getData()$dim_data_entry,
+          dim_data_1 = getData()$dim_without_checks, 
+          Block_Fillers = NULL
+      )
     }) 
 
     observeEvent(available_percent_table()$dt, {
@@ -635,11 +668,13 @@ mod_Diagonal_server <- function(id) {
         my_split_r <- rand_checks()[[sites]]$map_checks
           n_rows <- field_dimensions_diagonal()$d_row
           n_cols <- field_dimensions_diagonal()$d_col
-          data_random <- get_single_random(n_rows = n_rows, 
-                                           n_cols = n_cols, 
-                                           matrix_checks = map_checks, 
-                                           checks = checksEntries, 
-                                           data = data_entry) 
+          data_random <- get_single_random(
+            n_rows = n_rows, 
+            n_cols = n_cols, 
+            matrix_checks = map_checks, 
+            checks = checksEntries, 
+            data = data_entry
+          ) 
         random_entries_locs[[sites]] <- data_random
       }
       return(random_entries_locs)
@@ -666,28 +701,28 @@ mod_Diagonal_server <- function(id) {
       s <- unlist(loc_view_user$Entries)
       rownames(df) <- nrow(df):1
       style_equal <- rep('gray', length(s))
-      DT::datatable(df,#,
-                    extensions = c('Buttons'),# , 'FixedColumns'
-                    options = list(dom = 'Blfrtip',
-                                    autoWidth = FALSE,
-                                    scrollX = TRUE,
-                                    fixedColumns = TRUE,
-                                    pageLength = nrow(df),
-                                    scrollY = "590px",
-                                    class = 'compact cell-border stripe',  
-                                    rownames = FALSE,
-                                    server = FALSE,
-                                    filter = list( position = 'top',
-                                                  clear = FALSE,
-                                                  plain =TRUE ),
-                                    buttons = c('copy', 'excel'),
-                                    lengthMenu = list(c(10,25,50,-1),
-                                                      c(10,25,50,"All")))
+      DT::datatable(
+        df,
+        extensions = c('Buttons'),
+        options = list(dom = 'Blfrtip',
+                        autoWidth = FALSE,
+                        scrollX = TRUE,
+                        fixedColumns = TRUE,
+                        pageLength = nrow(df),
+                        scrollY = "590px",
+                        class = 'compact cell-border stripe',  
+                        rownames = FALSE,
+                        server = FALSE,
+                        filter = list( position = 'top',
+                                      clear = FALSE,
+                                      plain =TRUE ),
+                        buttons = c('copy', 'excel'),
+                        lengthMenu = list(c(10,25,50,-1),
+                                          c(10,25,50,"All")))
       ) %>% 
         DT::formatStyle(paste0(rep('V', ncol(df)), 1:ncol(df)),
                         backgroundColor = DT::styleEqual(c(checks),
                                                           colores[1:len_checks]))
-      #}
     })
     
     
@@ -745,7 +780,6 @@ mod_Diagonal_server <- function(id) {
       locs_diagonal <- single_inputs()$sites
       plots_number_sites <- vector(mode = "list", length = locs_diagonal)
       for (sites in 1:locs_diagonal) {
-        
           expe_names <- single_inputs()$expt_name 
           fillers <- sum(datos_name == "Filler")
           plot_nub <- plot_number(
@@ -774,24 +808,24 @@ mod_Diagonal_server <- function(id) {
       if("Filler" %in% w_map) Option_NCD <- TRUE else Option_NCD <- FALSE
       df <- as.data.frame(plot_num)
       rownames(df) <- nrow(df):1
-      DT::datatable(df,
-                    extensions = c('Buttons'),
-                    options = list(dom = 'Blfrtip',
-                                   autoWidth = FALSE,
-                                   scrollX = TRUE,
-                                   fixedColumns = TRUE,
-                                   pageLength = nrow(df),
-                                   scrollY = "700px",
-                                   class = 'compact cell-border stripe',  rownames = FALSE,
-                                   server = FALSE,
-                                   filter = list( position = 'top', clear = FALSE, plain =TRUE ),
-                                   buttons = c('copy', 'excel'),
-                                   lengthMenu = list(c(10,25,50,-1),
-                                                     c(10,25,50,"All")))
+      DT::datatable(
+        df,
+        extensions = c('Buttons'),
+        options = list(dom = 'Blfrtip',
+                       autoWidth = FALSE,
+                       scrollX = TRUE,
+                       fixedColumns = TRUE,
+                       pageLength = nrow(df),
+                       scrollY = "700px",
+                       class = 'compact cell-border stripe',  rownames = FALSE,
+                       server = FALSE,
+                       filter = list( position = 'top', clear = FALSE, plain =TRUE ),
+                       buttons = c('copy', 'excel'),
+                       lengthMenu = list(c(10,25,50,-1),
+                                         c(10,25,50,"All")))
       )
     })
 
-    # export_diagonal_design <- eventReactive(input$get_random, {
     export_diagonal_design <- reactive({
       locs_diagonal <- single_inputs()$sites
       final_expt_fieldbook <- vector(mode = "list",length = locs_diagonal)
@@ -822,18 +856,22 @@ mod_Diagonal_server <- function(id) {
         random_entries_map <- apply(random_entries_map, 2 ,as.numeric)
 
         results_to_export <- list(random_entries_map, plot_number, Col_checks, my_names)
-        final_expt_export <- export_design(G = results_to_export, 
-                                            movement_planter = movement_planter,
-                                            location = location_names[user_site], Year = NULL,
-                                            data_file = my_data_VLOOKUP, reps = FALSE)
+        final_expt_export <- export_design(
+          G = results_to_export, 
+          movement_planter = movement_planter,
+          location = location_names[user_site], 
+          Year = NULL,
+          data_file = my_data_VLOOKUP, 
+          reps = FALSE
+        )
         final_expt_fieldbook[[user_site]] <- as.data.frame(final_expt_export)
       }
 
       final_fieldbook <- dplyr::bind_rows(final_expt_fieldbook)
       
-      if(Option_NCD == TRUE) {
+      if (Option_NCD == TRUE) {
         final_fieldbook$CHECKS <- ifelse(final_fieldbook$NAME == "Filler", 0, final_fieldbook$CHECKS)
-        final_fieldbook$EXPT <- ifelse(final_fieldbook$EXPT == "Filler", 0, final_fieldbook$EXPT)
+        #final_fieldbook$EXPT <- ifelse(final_fieldbook$EXPT == "Filler", 0, final_fieldbook$EXPT)
       }
 
       ID <- 1:nrow(final_fieldbook)
@@ -942,12 +980,13 @@ mod_Diagonal_server <- function(id) {
         for (sites in 1:locs_diag) {
           df_loc <- subset(df_diag, LOCATION == loc_levels_factors[w])
           fieldBook <- df_loc[, c(1,6,7,9)]
-          dfSimulation <- AR1xAR1_simulation(nrows = nrows_diag, ncols = ncols_diag, 
-                                             ROX = ROX_DIAG, ROY = ROY_DIAG, 
-                                             minValue = minVal, maxValue = maxVal, 
-                                             fieldbook = fieldBook, 
-                                             trail = valsDIAG$trail, 
-                                             seed = NULL)
+          dfSimulation <- AR1xAR1_simulation(
+            nrows = nrows_diag, ncols = ncols_diag, 
+            ROX = ROX_DIAG, ROY = ROY_DIAG, 
+            minValue = minVal, maxValue = maxVal, 
+            fieldbook = fieldBook, 
+            trail = valsDIAG$trail, 
+            seed = NULL)
           dfSimulation <- dfSimulation$outOrder
           df_simulation_list[[sites]] <- dfSimulation
           dataPrep <- df_loc
