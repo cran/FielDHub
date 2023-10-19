@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = NA,
@@ -6,26 +6,26 @@ knitr::opts_chunk$set(
   message = FALSE
 )
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  FielDHub::run_app()
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  library(FielDHub)
 #  run_app()
 
-## ---- include=FALSE-----------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 ENTRY <- 1:12
 NAME <- c(c("CH1","CH2","CH3","CH4"), paste0("ND-", 5:12))
 df <- data.frame(ENTRY,NAME)
 
-## ---- echo = FALSE, results='asis'--------------------------------------------
+## ----echo = FALSE, results='asis'---------------------------------------------
 library(knitr)
 kable(df)
 
-## ---- echo = TRUE-------------------------------------------------------------
+## ----echo = TRUE--------------------------------------------------------------
 library(FielDHub)
 
-## ---- echo = TRUE, warning=FALSE, comment=''----------------------------------
+## ----echo = TRUE, warning=FALSE, comment=''-----------------------------------
 single_diag <- diagonal_arrangement(
   nrows = 15,
   ncols = 22,
@@ -38,33 +38,33 @@ single_diag <- diagonal_arrangement(
   seed = 16,
 )
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  print(single_diag)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 print(single_diag)
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  field_book <- single_diag$fieldBook
 #  head(field_book, 10)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 field_book <- single_diag$fieldBook
 head(field_book, 10)
 
-## ---- fig.align='center', fig.width=7.2, fig.height=5-------------------------
+## ----fig.align='center', fig.width=7.2, fig.height=5--------------------------
 plot(single_diag)
 
-## ---- include=FALSE-----------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 ENTRY <- 1:12
 NAME <- c(c("CH1","CH2","CH3","CH4"), paste0("ND-", 5:12))
 df <- data.frame(ENTRY,NAME)
 
-## ---- echo = FALSE, results='asis'--------------------------------------------
+## ----echo = FALSE, results='asis'---------------------------------------------
 library(knitr)
 kable(df)
 
-## ---- echo=TRUE---------------------------------------------------------------
+## ----echo=TRUE----------------------------------------------------------------
 multi_diag <- diagonal_arrangement(
   nrows = 15,
   ncols = 22,
@@ -79,20 +79,20 @@ multi_diag <- diagonal_arrangement(
   seed = 17
 )
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  print(multi_diag)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 print(multi_diag)
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  field_book <- multi_diag$fieldBook
 #  head(field_book, 10)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 field_book <- multi_diag$fieldBook
 head(field_book, 10)
 
-## ---- fig.align='center', fig.width=7.2, fig.height=5-------------------------
+## ----fig.align='center', fig.width=7.2, fig.height=5--------------------------
 plot(multi_diag)
 

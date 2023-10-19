@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 options(rmarkdown.html_vignette.check_title = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -7,20 +7,20 @@ knitr::opts_chunk$set(
   message = FALSE
 )
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 library(FielDHub)
 library(magrittr)
 library(knitr)
 library(kableExtra)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 set.seed(123)
 X <- matrix(sample(c(rep(1:10, 2), 11:50), replace = FALSE), ncol = 10)
 X[2,2] <- 5
 X[2,3] <- 33
 print(X)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 dist_X <- FielDHub:::pairs_distance(X = X)
 print(dist_X)
 
@@ -32,29 +32,29 @@ B <- swap_pairs(X, starting_dist = 3)
 print(B$optim_design)
 
 ## -----------------------------------------------------------------------------
-print(B$pairswise_distance)
+print(B$pairwise_distance)
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  FielDHub::run_app()
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  library(FielDHub)
 #  run_app()
 
-## ---- include=FALSE-----------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 ENTRY <- 1:10
 NAME <- c(paste0("Genotype", 1:10))
 df <- data.frame(ENTRY,NAME)
 
-## ---- echo = FALSE, results='asis'--------------------------------------------
+## ----echo = FALSE, results='asis'---------------------------------------------
 df %>%
   kbl() %>%
   kable_styling()
 
-## ---- echo = TRUE-------------------------------------------------------------
+## ----echo = TRUE--------------------------------------------------------------
 library(FielDHub)
 
-## ---- echo = TRUE-------------------------------------------------------------
+## ----echo = TRUE--------------------------------------------------------------
 optim_multi_prep <- multi_location_prep(
   lines = 150, 
   l = 5, 
@@ -66,13 +66,13 @@ optim_multi_prep <- multi_location_prep(
   seed = 2456
 )
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  print(head(optim_multi_prep$allocation, 10))
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 print(head(optim_multi_prep$allocation, 10))
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 optim_multi_prep$allocation %>%
         dplyr::mutate(
             Copies = rowSums(.),
@@ -83,23 +83,23 @@ optim_multi_prep$allocation %>%
         kbl() %>%
         kable_styling()
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  print(optim_multi_prep)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 print(optim_multi_prep)
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  field_book <- optim_multi_prep$fieldBook
 #  head(field_book, 10)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 field_book <- optim_multi_prep$fieldBook
 head(field_book, 10)
 
-## ---- fig.align='center', fig.width=7.2, fig.height=5.5-----------------------
+## ----fig.align='center', fig.width=7.2, fig.height=5.5------------------------
 plot(optim_multi_prep, l = 1)
 
-## ---- fig.align='center', fig.width=7.2, fig.height=5.5-----------------------
+## ----fig.align='center', fig.width=7.2, fig.height=5.5------------------------
 plot(optim_multi_prep, l = 5)
 

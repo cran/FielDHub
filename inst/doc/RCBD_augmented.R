@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = NA,
@@ -6,27 +6,27 @@ knitr::opts_chunk$set(
   message = FALSE
 )
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  FielDHub::run_app()
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  library(FielDHub)
 #  run_app()
 
-## ---- include=FALSE-----------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 library(FielDHub)
 ENTRY <- 1:12
 NAME <- c(c("CHECK1","CHECK2","CHECK3"), paste0("G-", 4:12))
 df <- data.frame(ENTRY,NAME)
 
-## ---- echo = FALSE, results='asis'--------------------------------------------
+## ----echo = FALSE, results='asis'---------------------------------------------
 library(knitr)
 kable(df, format = "html")
 
-## ---- echo = TRUE-------------------------------------------------------------
+## ----echo = TRUE--------------------------------------------------------------
 library(FielDHub)
 
-## ---- echo = TRUE-------------------------------------------------------------
+## ----echo = TRUE--------------------------------------------------------------
 aug_RCBD <- RCBD_augmented(
   lines = 120,
   checks = 4,
@@ -42,23 +42,23 @@ aug_RCBD <- RCBD_augmented(
   seed = 1987
 )
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  print(aug_RCBD)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 print(aug_RCBD)
 
-## ---- echo=TRUE, eval=FALSE---------------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  field_book <- aug_RCBD$fieldBook
 #  head(field_book, 10)
 
-## ---- echo=FALSE, eval=TRUE---------------------------------------------------
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
 field_book <- aug_RCBD$fieldBook
 head(field_book, 10)
 
-## ---- fig.align='center', fig.width=7.2, fig.height=5.5-----------------------
+## ----fig.align='center', fig.width=7.2, fig.height=5.5------------------------
 plot(aug_RCBD)
 
-## ---- fig.align='center', fig.width=7.2, fig.height=5.5-----------------------
+## ----fig.align='center', fig.width=7.2, fig.height=5.5------------------------
 plot(aug_RCBD, l = 2)
 

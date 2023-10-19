@@ -46,7 +46,7 @@
 #'   \item \code{dataEntry} is a data frame with the data input.
 #'   \item \code{genEntries} is a list with the entries for replicated and non-replicated parts.
 #'   \item \code{fieldBook} is a data frame with field book design. This includes the index (Row, Column).
-#'   \item \code{min_pairswise_distance} is a data frame with the minimum pairwise distance between 
+#'   \item \code{min_pairwise_distance} is a data frame with the minimum pairwise distance between 
 #'           each pair of locations.
 #'   \item \code{reps_info} is a data frame with information on the number of replicated and 
 #'           non-replicated treatments at each location.
@@ -190,15 +190,13 @@ partially_replicated <- function(
                     base::stop("Input data should have 4 columns: LOCATION | ENTRY | NAME | REPS")
                 }
                 colnames(gen_list) <- c("LOCATION", "ENTRY", "NAME", "REPS")
-                if (length(gen_list$ENTRY) != length(unique(gen_list$ENTRY))) {
-                    stop("Please ensure all ENTRIES in data are distinct.")
-                }
-                if (length(gen_list$NAME) != length(unique(gen_list$NAME))) {
-                    stop("Please ensure all NAMES in data are distinct.")
-                }
                 if (any(gen_list$ENTRY < 1) || any(gen_list$REPS < 1)) {
                     base::stop("Please ensure all ENTRIES and REPS in data are positive integers.")
-                } 
+                }
+                locs_in_data <- length(unique(gen_list$LOCATION))
+                if (locs_in_data != l) {
+                  stop("Number of locations in data do not match with the input value l")
+                }
                 # Create a space in memory for the locations data entry list
                 list_locs <- setNames(
                     object = vector(mode = "list", length = l), 
@@ -212,6 +210,13 @@ partially_replicated <- function(
                         dplyr::select(ENTRY, NAME, REPS) %>%
                         dplyr::arrange(dplyr::desc(REPS))
 
+                    if (length(df_loc$ENTRY) != length(unique(df_loc$ENTRY))) {
+                      stop("Please ensure all ENTRIES in data are distinct.")
+                    }
+                    if (length(df_loc$NAME) != length(unique(df_loc$NAME))) {
+                      stop("Please ensure all NAMES in data are distinct.")
+                    }
+                    
                     list_locs[[site]] <- df_loc
                 }
             } else if (is.list(data)){
@@ -261,7 +266,8 @@ partially_replicated <- function(
         }
         ENTRY <- 1:sum(repGens)
         NAME <- paste(rep("G", sum(repGens)), 1:sum(repGens), sep = "")
-        REPS <- as.numeric(sort(rep(repUnits, times = repGens), decreasing = TRUE))
+        # REPS <- as.numeric(sort(rep(repUnits, times = repGens), decreasing = TRUE))
+        REPS <- as.numeric(rep(repUnits, times = repGens))
         data <- data.frame(list(ENTRY = ENTRY,
                                 NAME = NAME,
                                 REPS = REPS))
@@ -277,7 +283,7 @@ partially_replicated <- function(
     layout_random_sites <- vector(mode = "list", length = l)
     plot_numbers_sites <- vector(mode = "list", length = l)
     col_checks_sites <- vector(mode = "list", length = l)
-    pairswise_distance_sites <- vector(mode = "list", length = l)
+    pairwise_distance_sites <- vector(mode = "list", length = l)
     min_distance_sites <- vector(mode = "numeric", length = l)
     treatments_with_reps = vector(mode = "list", length = l)
     treatments_with_no_reps = vector(mode = "list", length = l)
@@ -378,7 +384,7 @@ partially_replicated <- function(
         layout_random_sites[[sites]] <- layoutR
         plot_numbers_sites[[sites]] <- plot_number_L
         col_checks_sites[[sites]] <- as.matrix(BINAY_CHECKS)
-        pairswise_distance_sites[[sites]] <- prep$pairswise_distance
+        pairwise_distance_sites[[sites]] <- prep$pairwise_distance
         treatments_with_reps[[sites]] = prep$replicated_treatments
         treatments_with_no_reps[[sites]] = prep$unreplicated_treatments
     }
@@ -402,10 +408,10 @@ partially_replicated <- function(
         id_design = 13)
     output <- list(
         infoDesign = infoDesign,
-        min_pairswise_distance = min_dist_df,
+        min_pairwise_distance = min_dist_df,
         reps_info = reps_info,
         layoutRandom = layout_random_sites, 
-        pairsDistance = pairswise_distance_sites,
+        pairsDistance = pairwise_distance_sites,
         plotNumber = plot_numbers_sites,
         binaryField = col_checks_sites,
         dataEntry = dataInput,
