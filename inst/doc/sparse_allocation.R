@@ -8,7 +8,6 @@ knitr::opts_chunk$set(
 
 ## ----echo = FALSE-------------------------------------------------------------
 library(FielDHub)
-library(magrittr)
 library(knitr)
 library(kableExtra)
 
@@ -23,8 +22,8 @@ allocation <- data.frame(
  rownames(allocation) <- paste0("Gen-", 1:10)
 
 ## ----echo = FALSE-------------------------------------------------------------
-allocation %>%
-  kbl() %>%
+allocation |>
+  kbl() |>
   kable_styling()
 
 ## ----eval=FALSE---------------------------------------------------------------
@@ -40,8 +39,8 @@ NAME <- c(c("CHECK1","CHECK2","CHECK3"), c(paste0("Genotype", LETTERS[1:6])))
 df <- data.frame(ENTRY,NAME)
 
 ## ----echo = FALSE, results='asis'---------------------------------------------
-df %>%
-  kbl() %>%
+df |>
+  kbl() |>
   kable_styling()
 
 ## ----echo = TRUE--------------------------------------------------------------
