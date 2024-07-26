@@ -46,7 +46,7 @@ mod_RowCol_ui <- function(id){
                      ns = ns,
                      numericInput(ns("t.rcd"), 
                                   label = "Input # of Treatments:",
-                                  value = 36,
+                                  value = 42,
                                   min = 2),
                    ),
                    fluidRow(
@@ -58,7 +58,7 @@ mod_RowCol_ui <- function(id){
                      column(6,style=list("padding-left: 5px;"),
                             numericInput(ns("r.rcd"), 
                                          label = "Input # of Full Reps:",
-                                         value = 3, 
+                                         value = 2, 
                                          min = 2)
                      )
                    ),
@@ -84,7 +84,7 @@ mod_RowCol_ui <- function(id){
                    ),
                    numericInput(ns("seed.rcd"), 
                                 label = "Random Seed:", 
-                                value = 1),
+                                value = 2437),
                    fluidRow(
                      column(6,
                             actionButton(
@@ -110,6 +110,16 @@ mod_RowCol_ui <- function(id){
         width = 8,
         fluidRow(
           tabsetPanel(
+            tabPanel(
+              "Summary Design",
+              br(),
+              shinycssloaders::withSpinner(
+                verbatimTextOutput(outputId = ns("summary_row_column"), 
+                                   placeholder = FALSE), 
+                type = 4
+              ),
+              style = "padding-right: 40px;"
+            ),
             tabPanel("Field Layout",
                      shinyjs::useShinyjs(),
                      shinyjs::hidden(downloadButton(ns("downloadCsv.rcd"), 
@@ -332,6 +342,12 @@ mod_RowCol_server <- function(id){
       
     }) |>
       bindEvent(input$RUN.rcd)
+    
+    output$summary_row_column <- renderPrint({
+      req(RowCol_reactive())
+      cat("Randomization was successful!", "\n", "\n")
+      print(RowCol_reactive(), n = 6)
+    })
     
     upDateSites <- reactive({
       req(input$l.rcd)

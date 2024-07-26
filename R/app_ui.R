@@ -17,7 +17,7 @@ app_ui <- function(request) {
   tagList(
     golem_add_external_resources(),
     fluidPage(theme = shinythemes::shinytheme("flatly"),
-              navbarPage(title = "FielDHub v1.4.0", 
+              navbarPage(title = "FielDHub v1.4.2", 
                          tabPanel(
                            " Welcome!", icon = icon("home", lib = "glyphicon"),
                             suppressWarnings(
@@ -87,7 +87,7 @@ app_ui <- function(request) {
                                     tabPanel("Incomplete Blocks Design (IBD)",
                                              mod_IBD_ui("IBD_ui_1")
                                     ),
-                                    tabPanel("Resolvable Row-Column Design (RCD)",
+                                    tabPanel("Resolvable Row-Column Design (RRCD)",
                                              mod_RowCol_ui("RowCol_ui_1")
                                     )
                          ),

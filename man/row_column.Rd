@@ -12,6 +12,7 @@ row_column(
   plotNumber = 101,
   locationNames = NULL,
   seed = NULL,
+  iterations = 1000,
   data = NULL
 )
 }
@@ -24,11 +25,16 @@ row_column(
 
 \item{l}{Number of locations. By default \code{l = 1}.}
 
-\item{plotNumber}{Numeric vector with the starting plot number for each location. By default \code{plotNumber = 101}.}
+\item{plotNumber}{Numeric vector with the starting plot number for each 
+location. By default \code{plotNumber = 101}.}
 
 \item{locationNames}{(optional) Names for each location.}
 
-\item{seed}{(optional) Real number that specifies the starting seed to obtain reproducible designs.}
+\item{seed}{(optional) Real number that specifies the starting seed to obtain 
+reproducible designs.}
+
+\item{iterations}{Number of iterations for design optimization. By 
+default \code{iterations = 1000}.}
 
 \item{data}{(optional) Data frame with label list of treatments}
 }
@@ -42,34 +48,64 @@ A list with four elements.
 }
 }
 \description{
-It randomly generates a resolvable row-column designs (RowColD). 
-Note that design optimization is only done at the level of rows and not columns; 
-hence, design is suboptimal. The randomization can be done across locations.
+It randomly generates a resolvable row-column design (RowColD).
+ The design is optimized in both rows and columns blocking factors. The 
+ randomization can be done across multiple locations.
+}
+\details{
+The Row-Column design in FielDHub is built in two stages. The first step 
+constructs the blocking factor \code{Columns} using Incomplete Block Units 
+from an incomplete block design that sets the number of incomplete blocks as 
+the number of \code{Columns} in the design, each of which has a dimension 
+equal to the number of \code{Rows}. Once this design is generated, the 
+\code{Rows} are used as the \code{Row} blocking factor that is optimized for 
+A-Efficiency, but levels within the original \code{Columns} are fixed.
+To optimize the \code{Rows} while maintaining the current optimized \code{Columns}, 
+we use a heuristic algorithm that swaps at random treatment positions within 
+a given \code{Column (Block)} also selected at random. The algorithm begins 
+by calculating the A-Efficiency on the initial design, performs a swap iteration, 
+recalculates the A-Efficiency on the resulting design, and compares it with 
+the previous one to decide whether to keep or discard the new design. This 
+iterative process is repeated, by default, 1,000 times.
 }
 \examples{
 
-# Example 1: Generates a row-column design with 3 full blocks and 36 treatments
-# and 6 rows. This for one location.
-rowcold1 <- row_column(t = 36, nrows = 6, r = 3, l = 1, 
-                       plotNumber= 101, 
-                       locationNames = "Loc1",
-                       seed = 21)
+# Example 1: Generates a row-column design with 2 full blocks and 24 treatments
+# and 6 rows. This for one location. This example uses 100 iterations for the optimization
+# but 1000 is the default and recomended value.
+rowcold1 <- row_column(
+  t = 24, 
+  nrows = 6, 
+  r = 2, 
+  l = 1, 
+  plotNumber= 101, 
+  locationNames = "Loc1",
+  iterations = 100,
+  seed = 21
+)
 rowcold1$infoDesign
 rowcold1$resolvableBlocks
 head(rowcold1$fieldBook,12)
 
-# Example 2: Generates a row-column design with 3 full blocks and 30 treatments
-# and 5 rows, for one location.
+# Example 2: Generates a row-column design with 2 full blocks and 30 treatments
+# and 5 rows, for one location. This example uses 100 iterations for the optimization
+# but 1000 is the default and recommended value.
 # In this case, we show how to use the option data.
 treatments <- paste("ND-", 1:30, sep = "")
 ENTRY <- 1:30
 treatment_list <- data.frame(list(ENTRY = ENTRY, TREATMENT = treatments))
 head(treatment_list)
-rowcold2 <- row_column(t = 30, nrows = 5, r = 3, l = 1, 
-                       plotNumber= c(101,1001), 
-                       locationNames = c("A", "B"),
-                       seed = 15,
-                       data = treatment_list)
+rowcold2 <- row_column(
+  t = 30, 
+  nrows = 5, 
+  r = 2, 
+  l = 1, 
+  plotNumber= 1001, 
+  locationNames = "A",
+  seed = 15,
+  iterations = 100,
+  data = treatment_list
+)
 rowcold2$infoDesign
 rowcold2$resolvableBlocks
 head(rowcold2$fieldBook,12)
@@ -77,8 +113,8 @@ head(rowcold2$fieldBook,12)
 
 }
 \references{
-Edmondson., R. N. (2021). blocksdesign: Nested and crossed block designs for factorial and
-unstructured treatment sets. https://CRAN.R-project.org/package=blocksdesign
+Edmondson., R. N. (2021). blocksdesign: Nested and crossed block designs for 
+factorial and unstructured treatment sets. https://CRAN.R-project.org/package=blocksdesign
 }
 \author{
 Didier Murillo [aut],
