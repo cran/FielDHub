@@ -61,6 +61,17 @@ mod_pREPS_ui <- function(id){
 				label = "# of Rep Per Group:",
 				value = "2,1")
 			),
+# 		sliderInput(ns("border_penalization"), 
+# 		            label = "Border Penalization", 
+# 		            min = 0.00, 
+# 		            max = 1.00, 
+# 		            value = 0.3),
+# 		selectInput(
+#       ns("optimization_distance_method"), 
+#       label = "Optimization Distance Method:", 
+#       choices = c("Euclidean" = "euclidean", "Manhattan" = "manhattan"), 
+#       selected = "manhattan"
+#       ),
 			fluidRow(
 				column(
 					width = 6,
@@ -483,6 +494,8 @@ mod_pREPS_server <- function(id){
             exptName =  expt_name,
             locationNames = site_names, 
             planter = movement_planter,
+            border_penalization = 0.5, #input$border_penalization,
+            dist_method = "euclidean", # input$optimization_distance_method,
             data = gen.list 
           )
       })
@@ -688,7 +701,8 @@ mod_pREPS_server <- function(id){
         set.seed(seed_prep)
         for (sites in 1:locs) {
             df_loc <- subset(df.prep, LOCATION == loc_levels_factors[w])
-            fieldBook <- df_loc[, c(1,6,7,9)]
+            # fieldBook <- df_loc[, c(1,6,7,9)]
+            fieldBook <- df_loc |> dplyr::select(ID, ROW, COLUMN, ENTRY)
             dfSimulation <- AR1xAR1_simulation(
                 nrows = nrows_prep, 
                 ncols = ncols_prep, 
@@ -705,7 +719,7 @@ mod_pREPS_server <- function(id){
           dfSimulationList[[sites]] <- dfSimulation
           dataPrep <- df_loc
           df_prep <- cbind(dataPrep, round(dfSimulation[,7],2))
-          colnames(df_prep)[11] <- as.character(valsPREP$trail.prep)
+          colnames(df_prep)[12] <- as.character(valsPREP$trail.prep)
           df.prep_list[[sites]] <- df_prep
           w <- w + 1
         }

@@ -1,6 +1,6 @@
 Package: FielDHub
 Title: A Shiny App for Design of Experiments in Life Sciences
-Version: 1.4.2
+Version: 1.5.0
 Authors@R: 
        c(person(given = "Didier",
               family = "Murillo",
@@ -45,7 +45,7 @@ Imports: config, golem, shiny (>= 1.7.0), htmltools, DT, shinythemes,
         dplyr, numbers, blocksdesign, shinycssloaders, ggplot2, plotly,
         viridis, shinyalert, desplot, shinyjs
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Author: Didier Murillo [cre, aut],
   Salvador Gezan [aut],
   Ana Heilman [ctb],
@@ -65,6 +65,6 @@ BugReports: https://github.com/DidierMurilloF/FielDHub/issues
 Language: en-US
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2024-07-26 19:44:58 UTC; didier.murilloflorez
+Packaged: 2026-02-26 21:22:01 UTC; didier.murilloflorez
 Repository: CRAN
-Date/Publication: 2024-07-26 20:20:06 UTC
+Date/Publication: 2026-02-27 06:30:36 UTC

@@ -12,10 +12,13 @@ partially_replicated(
   planter = "serpentine",
   l = 1,
   plotNumber = 101,
+  spread_reps = TRUE,
   seed = NULL,
   exptName = NULL,
   locationNames = NULL,
   multiLocationData = FALSE,
+  dist_method = "euclidean",
+  border_penalization = 0.5,
   data = NULL
 )
 }
@@ -34,14 +37,21 @@ partially_replicated(
 
 \item{plotNumber}{Numeric vector with the starting plot number for each location. By default \code{plotNumber = 101}.}
 
+\item{spread_reps}{A logical value indicating whether to maximize the spatial 
+distance between replicated treatments in the field. Default is \code{TRUE}.}
+
 \item{seed}{(optional) Real number that specifies the starting seed to obtain reproducible designs.}
 
 \item{exptName}{(optional) Name of the experiment.}
 
 \item{locationNames}{(optional) Name for each location.}
 
-\item{multiLocationData}{(optional) Option to pass an entry list for multiple locations. 
+\item{multiLocationData}{(optional) Option to pass an entry list for multiple locations.}
+
+\item{dist_method}{The method used for distance calculation. Options are "euclidean" (default) and "manhattan".
 By default \code{multiLocationData = FALSE}.}
+
+\item{border_penalization}{A tuning parameter for the centrality penalty. Default is 0.5.}
 
 \item{data}{(optional) Data frame with 3 columns: \code{ENTRY | NAME | REPS}. If
 \code{multiLocationData = TRUE} then the \code{data} must have

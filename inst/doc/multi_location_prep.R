@@ -35,11 +35,11 @@ print(B$optim_design)
 print(B$pairwise_distance)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  FielDHub::run_app()
+# FielDHub::run_app()
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library(FielDHub)
-#  run_app()
+# library(FielDHub)
+# run_app()
 
 ## ----include=FALSE------------------------------------------------------------
 ENTRY <- 1:10
@@ -67,7 +67,7 @@ optim_multi_prep <- multi_location_prep(
 )
 
 ## ----echo=TRUE, eval=FALSE----------------------------------------------------
-#  print(head(optim_multi_prep$allocation, 10))
+# print(head(optim_multi_prep$allocation, 10))
 
 ## ----echo=FALSE, eval=TRUE----------------------------------------------------
 print(head(optim_multi_prep$allocation, 10))
@@ -84,14 +84,14 @@ optim_multi_prep$allocation |>
     kable_styling()
 
 ## ----echo=TRUE, eval=FALSE----------------------------------------------------
-#  print(optim_multi_prep)
+# print(optim_multi_prep)
 
 ## ----echo=FALSE, eval=TRUE----------------------------------------------------
 print(optim_multi_prep)
 
 ## ----echo=TRUE, eval=FALSE----------------------------------------------------
-#  field_book <- optim_multi_prep$fieldBook
-#  head(field_book, 10)
+# field_book <- optim_multi_prep$fieldBook
+# head(field_book, 10)
 
 ## ----echo=FALSE, eval=TRUE----------------------------------------------------
 field_book <- optim_multi_prep$fieldBook

@@ -11,6 +11,7 @@ RCBD_augmented(
   l = 1,
   planter = "serpentine",
   plotNumber = 101,
+  repsStack = c("vertical", "horizontal"),
   exptName = NULL,
   seed = NULL,
   locationNames = NULL,
@@ -33,6 +34,8 @@ RCBD_augmented(
 \item{planter}{Option for \code{serpentine} or \code{cartesian} arrangement. By default \code{planter = 'serpentine'}.}
 
 \item{plotNumber}{Numeric vector with the starting plot number for each location. By default \code{plotNumber = 101}.}
+
+\item{repsStack}{Option for \code{horizontal} or \code{vertical} layout By default \code{repsStack = 'vertical'}.}
 
 \item{exptName}{(optional) Name of experiment.}
 
